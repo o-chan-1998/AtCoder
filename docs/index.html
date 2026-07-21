@@ -56,19 +56,33 @@
           <code>S</code> に戻るための別ルートが存在しないため閉路は作れない。
         </p>
 
-        <div class="image-grid">
-          <figure>
-            <img src="./assets/abc276-e/pic_001.png" alt="ABC276 E の理解用図 1">
-            <figcaption>S の周辺を確認する</figcaption>
-          </figure>
-          <figure>
-            <img src="./assets/abc276-e/pic_002.png" alt="ABC276 E の理解用図 2">
-            <figcaption>入口候補を分けて考える</figcaption>
-          </figure>
-          <figure>
-            <img src="./assets/abc276-e/pic_003.png" alt="ABC276 E の理解用図 3">
-            <figcaption>S を壁として探索する</figcaption>
-          </figure>
+        <div class="concept-grid" aria-label="解法イメージ">
+          <div class="concept-panel">
+            <h3>S の周辺を見る</h3>
+            <div class="mini-board" aria-hidden="true">
+              <span></span><span class="path"></span><span></span>
+              <span class="path"></span><span class="start">S</span><span class="path"></span>
+              <span></span><span class="wall">#</span><span></span>
+            </div>
+            <p><code>S</code> に隣接する通れるマスだけを入口候補にする。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>S を通らずに探索</h3>
+            <div class="flow" aria-hidden="true">
+              <span>A</span>
+              <strong>...</strong>
+              <span>B</span>
+            </div>
+            <p>探索中は <code>S</code> を壁と同じように扱う。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>入口同士がつながるか</h3>
+            <div class="answer-split" aria-hidden="true">
+              <span>connected</span>
+              <strong>Yes</strong>
+            </div>
+            <p>別の入口候補へ到達できれば、閉路を作れる。</p>
+          </div>
         </div>
       </section>
 
@@ -162,4 +176,3 @@ print("No")</code></pre>
     </main>
   </body>
 </html>
-
