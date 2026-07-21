@@ -128,6 +128,11 @@ h2 {
   text-decoration: none;
 }
 
+.label a {
+  color: var(--accent-dark);
+  text-decoration: none;
+}
+
 .intro,
 .article-section {
   padding-block: 2.5rem;
@@ -147,6 +152,45 @@ h2 {
 .problem-box p:last-child,
 .article-section p:last-child {
   margin-bottom: 0;
+}
+
+.article-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.article-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1.25rem;
+  background: #fff;
+}
+
+.article-card h2 {
+  margin-bottom: 0.6rem;
+}
+
+.article-card h2 a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.article-card h2 a:hover {
+  color: var(--accent);
+}
+
+.article-meta {
+  margin: 0 0 0.35rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.read-link {
+  display: inline-flex;
+  margin-top: 1rem;
+  font-weight: 700;
+  text-decoration: none;
 }
 
 .concept-grid {

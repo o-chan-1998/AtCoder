@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC276 E - Round Trip | AtCoder Study Notes</title>
+    <meta name="description" content="ABC276 E - Round Trip の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC276 E - Round Trip</h1>
+          <p class="lead">
+            始点 S から出発して、壁を通らず、同じマスを重複せずに S へ戻れるかを判定する。
+            ポイントは「S の隣接マス同士が、S を使わずにつながっているか」を見ること。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Sample Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            グリッド上に始点 <code>S</code>、通れるマス <code>.</code>、壁 <code>#</code> がある。
+            <code>S</code> から上下左右に移動し、壁を避けながら、長さ4以上の閉路を作れるなら <code>Yes</code>、
+            作れないなら <code>No</code> を出力する。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc276/tasks/abc276_e">AtCoder ABC276 E - Round Trip</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          閉路は必ず <code>S</code> から隣の通れるマスへ出て、最後に別の隣接マスから <code>S</code> へ戻る。
+          つまり、<code>S</code> の隣にある通れるマスを入口候補として集め、そのうち2つ以上が
+          <code>S</code> を通らずに同じ連結成分に属していればよい。
+        </p>
+        <p>
+          逆に、どの入口候補同士も <code>S</code> を使わずにつながっていないなら、
+          <code>S</code> に戻るための別ルートが存在しないため閉路は作れない。
+        </p>
+
+        <div class="concept-grid" aria-label="解法イメージ">
+          <div class="concept-panel">
+            <h3>S の周辺を見る</h3>
+            <div class="mini-board" aria-hidden="true">
+              <span></span><span class="path"></span><span></span>
+              <span class="path"></span><span class="start">S</span><span class="path"></span>
+              <span></span><span class="wall">#</span><span></span>
+            </div>
+            <p><code>S</code> に隣接する通れるマスだけを入口候補にする。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>S を通らずに探索</h3>
+            <div class="flow" aria-hidden="true">
+              <span>A</span>
+              <strong>...</strong>
+              <span>B</span>
+            </div>
+            <p>探索中は <code>S</code> を壁と同じように扱う。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>入口同士がつながるか</h3>
+            <div class="answer-split" aria-hidden="true">
+              <span>connected</span>
+              <strong>Yes</strong>
+            </div>
+            <p>別の入口候補へ到達できれば、閉路を作れる。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li><code>S</code> の位置を探す。</li>
+            <li><code>S</code> の上下左右にある <code>.</code> を入口候補として集める。</li>
+            <li>入口候補が2個未満なら、閉路は作れないので <code>No</code>。</li>
+            <li>各入口候補から BFS し、<code>S</code> を通らずに他の入口候補へ到達できるか調べる。</li>
+            <li>到達できる組があれば <code>Yes</code>、なければ <code>No</code>。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          探索中は <code>C[nr][nc] != "."</code> のマスへ進まないようにする。
+          これにより <code>#</code> だけでなく <code>S</code> も通れない扱いになる。
+        </p>
+        <p>
+          学習用の <code>sample.py</code> はファイル入力だが、公開記事では AtCoder に提出しやすい標準入力版を載せる。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>from collections import deque
+
+H, W = map(int, input().split())
+C = [input().strip() for _ in range(H)]
+
+sr = sc = -1
+for r in range(H):
+    for c in range(W):
+        if C[r][c] == "S":
+            sr, sc = r, c
+
+directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+entrances = []
+
+for dr, dc in directions:
+    nr = sr + dr
+    nc = sc + dc
+    if 0 <= nr < H and 0 <= nc < W and C[nr][nc] == ".":
+        entrances.append((nr, nc))
+
+if len(entrances) < 2:
+    print("No")
+    raise SystemExit
+
+entrance_set = set(entrances)
+
+for start in entrances:
+    visited = [[False] * W for _ in range(H)]
+    queue = deque([start])
+    visited[start[0]][start[1]] = True
+
+    while queue:
+        r, c = queue.popleft()
+
+        if (r, c) in entrance_set and (r, c) != start:
+            print("Yes")
+            raise SystemExit
+
+        for dr, dc in directions:
+            nr = r + dr
+            nc = c + dc
+            if not (0 <= nr < H and 0 <= nc < W):
+                continue
+            if visited[nr][nc]:
+                continue
+            if C[nr][nc] != ".":
+                continue
+
+            visited[nr][nc] = True
+            queue.append((nr, nc))
+
+print("No")</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>まとめ</h2>
+        <p>
+          この問題は、閉路そのものを直接探すより、<code>S</code> の隣接マスの連結性に言い換えると見通しがよくなる。
+          <code>S</code> を通れないマスとして扱い、入口候補同士がつながるかだけを BFS で確認する。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
+

@@ -2,7 +2,7 @@
 
 ## 目的
 
-AtCoder 学習内容を、GitHub Pages で解説記事として公開する。
+AtCoder の学習内容を、GitHub Pages で解説記事として公開する。
 
 主な用途は自分の学習用だが、「3日後の自分は赤の他人」とみなし、他の人が読んでも理解できる記事にする。
 
@@ -24,11 +24,13 @@ AtCoder 学習内容を、GitHub Pages で解説記事として公開する。
 
 GitHub Pages に公開するのは、新規に作成する公開用ページのみとする。
 
-既存の `D` / `E` ディレクトリは、学習用の原本として扱い、GitHub Pages にはアップロードしない方針。
+既存の `D` / `E` ディレクトリは、学習用の原本として扱い、GitHub Pages にはアップロードしない。
 
 公開記事では、既存ファイルをそのまま並べるのではなく、1問ごとに読みやすい解説記事へ再構成する。
 
-GitHub リポジトリは次の場所に作成済み。
+将来的には全問題をアップロード予定。そのため、トップページを記事一覧、各問題を個別ページとして管理する。
+
+GitHub リポジトリと公開URL。
 
 - Repository: https://github.com/o-chan-1998/AtCoder
 - GitHub Pages: https://o-chan-1998.github.io/AtCoder/
@@ -45,6 +47,10 @@ GitHub リポジトリは次の場所に作成済み。
 - 公開用として新しく作成した画像だけを使う
 - 文章や表で説明できる場合は画像にしない
 
+難易度の数字や難易度表示には一切触れない。
+
+理由は、難易度自体がヒントになり、学習の妨げになるため。
+
 ## 記事の基本構成
 
 1問につき1記事を基本とする。
@@ -55,7 +61,7 @@ GitHub リポジトリは次の場所に作成済み。
 - 問題の要約
 - 考察
 - 解法方針
-- 図解または画像
+- 図解または文章による補足
 - 実装の注意点
 - コード
 - つまずきポイント
@@ -83,38 +89,49 @@ GitHub リポジトリは次の場所に作成済み。
 
 ## サイト構成の方針
 
-公開用サイトは、既存の `D` / `E` ディレクトリとは分離して新規作成する。
+公開用サイトは、既存の `D` / `E` ディレクトリとは分離して `docs` ディレクトリで管理する。
 
-現在は、GitHub Pages のブランチ公開設定で選びやすい `docs` ディレクトリを公開用サイトとして使う。
+GitHub Pages の公開元は、`master` ブランチの `/docs` に設定済み。
 
-当初候補は `site` だったが、GitHub Pages の標準設定ではルートまたは `/docs` を公開元にしやすいため、試作段階では `docs` を採用する。
-
-想定構成。
+現在の構成。
 
 ```txt
 C:\AtCoder
   D\
   E\
   docs\
-    ...
+    index.html
+    styles.css
+    problems\
+      abc276-e\
+        index.html
 ```
 
-GitHub Pages の公開対象は `docs` 側に限定する。
+`docs/index.html` は問題一覧トップページとする。
+
+各問題の記事は `docs/problems/{contest}-{problem}/index.html` に置く。
+
+例。
+
+```txt
+docs/problems/abc276-e/index.html
+docs/problems/abc307-e/index.html
+```
+
+公開URLの例。
+
+```txt
+https://o-chan-1998.github.io/AtCoder/
+https://o-chan-1998.github.io/AtCoder/problems/abc276-e/
+```
 
 `D` / `E` は `.gitignore` に追加し、誤って GitHub にアップロードしない。
 
 ## 技術選定の現時点方針
 
-Markdown ベースで記事を書ける構成にする。
+現在は静的 HTML/CSS で試作している。
 
-候補としては Astro が有力。
-
-理由。
-
-- Markdown 記事を書きやすい
-- 画像を扱いやすい
-- 記事一覧やタグを後から追加しやすい
-- 静的サイトとして GitHub Pages に公開しやすい
+Markdown ベースで記事を書ける構成にする案として Astro は引き続き候補。
 
 ただし、トライアンドエラーで進めるため、必要に応じて方針は変更する。
 
@@ -126,7 +143,9 @@ Markdown ベースで記事を書ける構成にする。
 
 ## 作成済みの試作
 
-`docs/index.html` に、ABC276 E - Round Trip のサンプル記事を作成した。
+`docs/index.html` を、問題一覧トップページに変更した。
+
+`docs/problems/abc276-e/index.html` に、ABC276 E - Round Trip のサンプル記事を移動した。
 
 `docs/styles.css` に、公開ページ用のスタイルを作成した。
 
@@ -136,11 +155,9 @@ Markdown ベースで記事を書ける構成にする。
 
 また、学習用の `E/276/sample.py` をそのまま掲載せず、AtCoder に提出しやすい標準入力版コードとして掲載している。
 
-GitHub Pages の公開元は、`master` ブランチの `/docs` に設定済み。
-
 ## 次に検討すること
 
 - Astro を使うか、現在の静的 HTML/CSS 構成のまま進めるか
-- 最初に公開する問題を `D` / `E` のどちらから選ぶか
+- 次に公開する問題を `D` / `E` のどちらから選ぶか
 - 1問分の記事テンプレートを作るか
 - 公開用に新しく作る画像や図解を、どのようなルールで管理するか
