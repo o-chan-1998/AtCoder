@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC307 E - Distinct Adjacent | AtCoder Study Notes</title>
+    <meta name="description" content="ABC307 E - Distinct Adjacent の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC307 E - Distinct Adjacent</h1>
+          <p class="lead">
+            円環に並ぶ人へ色を割り当て、隣同士が同じ色にならないようにする数え上げ。
+            1番目の色を固定し、今見ている位置が1番目と同じか違うかだけで状態を持つ。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            円環状に並んだ <code>N</code> 個の位置へ、<code>M</code> 種類の色を割り当てる。
+            隣接する位置の色がすべて異なるような割り当て数を、指定された法で求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc307/tasks/abc307_e">AtCoder ABC307 E - Distinct Adjacent</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          円環なので、最後の位置は1番目の位置とも隣接する。そこで1番目の色を一度固定して考える。
+          途中で必要なのは、今の位置の色が1番目と同じか、違うかだけ。
+        </p>
+        <div class="concept-grid" aria-label="状態遷移のイメージ">
+          <div class="concept-panel">
+            <h3>same</h3>
+            <div class="flow" aria-hidden="true"><span>1番目と同じ</span></div>
+            <p>今見ている位置が、固定した1番目の色と同じ。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>diff</h3>
+            <div class="flow" aria-hidden="true"><span>1番目と違う</span></div>
+            <p>今見ている位置が、固定した1番目の色と違う。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>最後</h3>
+            <div class="answer-split" aria-hidden="true"><span>diff</span><strong>OK</strong></div>
+            <p>円環を閉じるため、最後は1番目と違う必要がある。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>1番目の色を固定し、最後に <code>M</code> 倍する。</li>
+            <li><code>same</code> を「今の色が1番目と同じ」、<code>diff</code> を「違う」とする。</li>
+            <li>次の位置が <code>same</code> になるには、直前が <code>diff</code> である必要がある。</li>
+            <li>次の位置が <code>diff</code> になる選び方を、直前の状態ごとに数える。</li>
+            <li>最後の位置は1番目と違う必要があるので、答えは <code>M * diff</code>。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          <code>same</code> から <code>diff</code> へは、1番目以外の色を選ぶので <code>M - 1</code> 通り。
+          <code>diff</code> から <code>diff</code> へは、直前の色と1番目の色を避けるので <code>M - 2</code> 通り。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>MOD = 998244353
+
+N, M = map(int, input().split())
+
+same = 1
+diff = 0
+
+for _ in range(2, N + 1):
+    next_same = diff
+    next_diff = same * (M - 1) + diff * (M - 2)
+    same = next_same % MOD
+    diff = next_diff % MOD
+
+print((M * diff) % MOD)</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>まとめ</h2>
+        <p>
+          円環をそのまま扱うと最後と最初の関係が邪魔になる。
+          1番目の色を固定し、現在地が1番目と同じか違うかだけを見ると、状態数を小さくできる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
+

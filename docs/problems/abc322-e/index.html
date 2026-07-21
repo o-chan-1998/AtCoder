@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC322 E - Product Development | AtCoder Study Notes</title>
+    <meta name="description" content="ABC322 E - Product Development の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC322 E - Product Development</h1>
+          <p class="lead">
+            複数のパラメータを目標値まで上げるため、どの開発案を採用するかを選ぶ。
+            各パラメータの現在値を状態にしたDPで、最小コストを管理する。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            <code>N</code> 個の開発案があり、それぞれコストと <code>K</code> 個のパラメータ上昇量を持つ。
+            すべてのパラメータを少なくとも <code>P</code> にするための最小コストを求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc322/tasks/abc322_e">AtCoder ABC322 E - Product Development</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          各パラメータの値をそのまま状態として持つ。ただし、目標は <code>P</code> 以上かどうかなので、
+          <code>P</code> を超えた値はすべて <code>P</code> に丸めてよい。
+        </p>
+        <div class="concept-grid" aria-label="状態DPのイメージ">
+          <div class="concept-panel">
+            <h3>状態</h3>
+            <div class="flow" aria-hidden="true"><span>(0, 1, 2)</span></div>
+            <p>各パラメータの現在値をタプルで表す。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>遷移</h3>
+            <div class="flow" aria-hidden="true"><span>選ぶ</span><strong>+</strong><span>cost</span></div>
+            <p>開発案を採用した場合の次状態へ、コストを加えて更新する。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>丸め</h3>
+            <div class="answer-split" aria-hidden="true"><span>P以上</span><strong>P</strong></div>
+            <p>状態数を抑えるため、上限は <code>P</code> にする。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li><code>dp[state] = その状態へ到達する最小コスト</code> とする。</li>
+            <li>初期状態はすべて0のタプル。</li>
+            <li>各開発案について、採用しない場合と採用する場合を考える。</li>
+            <li>採用する場合は、各パラメータを増やし、<code>P</code> を超えたら <code>P</code> に丸める。</li>
+            <li>目標状態 <code>(P, P, ..., P)</code> の最小コストを答える。なければ <code>-1</code>。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          1つの開発案を2回使わないように、各案を処理するときは現在の <code>dp</code> から
+          <code>next_dp</code> を作って更新する。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>INF = 10**30
+
+N, K, P = map(int, input().split())
+plans = []
+
+for _ in range(N):
+    values = list(map(int, input().split()))
+    cost = values[0]
+    increases = values[1:]
+    plans.append((cost, increases))
+
+start = tuple(0 for _ in range(K))
+goal = tuple(P for _ in range(K))
+dp = {start: 0}
+
+for cost, increases in plans:
+    next_dp = dict(dp)
+
+    for state, current_cost in dp.items():
+        next_state = []
+        for i in range(K):
+            next_state.append(min(P, state[i] + increases[i]))
+        next_state = tuple(next_state)
+
+        next_cost = current_cost + cost
+        if next_cost < next_dp.get(next_state, INF):
+            next_dp[next_state] = next_cost
+
+    dp = next_dp
+
+answer = dp.get(goal, INF)
+print(-1 if answer == INF else answer)</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>まとめ</h2>
+        <p>
+          複数の目標値を同時に扱うときは、値の組を状態として持てるかを考える。
+          今回は各値を <code>0</code> から <code>P</code> までに丸められるため、辞書DPで素直に更新できる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
+

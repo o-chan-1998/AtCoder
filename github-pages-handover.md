@@ -105,6 +105,12 @@ C:\AtCoder
     problems\
       abc276-e\
         index.html
+      abc307-e\
+        index.html
+      abc322-e\
+        index.html
+      abc354-e\
+        index.html
 ```
 
 `docs/index.html` は問題一覧トップページとする。
@@ -116,6 +122,8 @@ C:\AtCoder
 ```txt
 docs/problems/abc276-e/index.html
 docs/problems/abc307-e/index.html
+docs/problems/abc322-e/index.html
+docs/problems/abc354-e/index.html
 ```
 
 公開URLの例。
@@ -146,6 +154,12 @@ Markdown ベースで記事を書ける構成にする案として Astro は引�
 `docs/index.html` を、問題一覧トップページに変更した。
 
 `docs/problems/abc276-e/index.html` に、ABC276 E - Round Trip のサンプル記事を移動した。
+
+`docs/problems/abc307-e/index.html` に、ABC307 E - Distinct Adjacent の記事を追加した。
+
+`docs/problems/abc322-e/index.html` に、ABC322 E - Product Development の記事を追加した。
+
+`docs/problems/abc354-e/index.html` に、ABC354 E - Remove Pairs の記事を追加した。
 
 `docs/styles.css` に、公開ページ用のスタイルを作成した。
 

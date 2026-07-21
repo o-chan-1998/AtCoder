@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC354 E - Remove Pairs | AtCoder Study Notes</title>
+    <meta name="description" content="ABC354 E - Remove Pairs の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC354 E - Remove Pairs</h1>
+          <p class="lead">
+            場に残っているカード集合をbitで表し、現在の手番が勝てるかを判定する。
+            相手を負け状態へ渡せる手が1つでもあれば勝ち。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            各カードには表の数と裏の数がある。手番では、表または裏の数が一致する2枚を選んで取り除く。
+            取れる手がなくなった人が負ける。先手が勝つかどうかを判定する。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc354/tasks/abc354_e">AtCoder ABC354 E - Remove Pairs</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          盤面は「どのカードが残っているか」で決まる。カード数が多くないため、
+          残っているカード集合をbit maskで表せば、すべての状態について勝敗を計算できる。
+        </p>
+        <p>
+          ゲームDPでは、現在の状態から1手進めて相手の負け状態にできるなら現在の状態は勝ち。
+          どの手を選んでも相手の勝ち状態へ行くなら、現在の状態は負けになる。
+        </p>
+        <div class="concept-grid" aria-label="ゲームDPのイメージ">
+          <div class="concept-panel">
+            <h3>状態</h3>
+            <div class="flow" aria-hidden="true"><span>10110</span></div>
+            <p>bitが1のカードが場に残っている。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>手</h3>
+            <div class="flow" aria-hidden="true"><span>2枚</span><strong>-</strong></div>
+            <p>表または裏が同じ2枚を選んで取り除く。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>勝ち</h3>
+            <div class="answer-split" aria-hidden="true"><span>相手が負け</span><strong>Win</strong></div>
+            <p>負け状態へ遷移できる手があれば勝ち。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li><code>mask</code> を場に残っているカード集合とする。</li>
+            <li><code>dp[mask]</code> を、その状態で手番の人が勝てるなら <code>True</code> とする。</li>
+            <li>各 <code>mask</code> について、残っている2枚の組をすべて試す。</li>
+            <li>取り除ける組なら、2bitを落とした <code>next_mask</code> へ進む。</li>
+            <li><code>dp[next_mask]</code> が <code>False</code> なら、現在の状態は <code>True</code>。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          <code>next_mask</code> は現在よりカード枚数が2枚少ない状態なので、
+          <code>mask</code> を小さい順に見ていくと、遷移先の勝敗はすでに計算済みになる。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>N = int(input())
+A = []
+B = []
+
+for _ in range(N):
+    a, b = map(int, input().split())
+    A.append(a)
+    B.append(b)
+
+total = 1 << N
+dp = [False] * total
+
+for mask in range(total):
+    for i in range(N):
+        if not (mask & (1 << i)):
+            continue
+
+        for j in range(i + 1, N):
+            if not (mask & (1 << j)):
+                continue
+            if A[i] != A[j] and B[i] != B[j]:
+                continue
+
+            next_mask = mask ^ (1 << i) ^ (1 << j)
+            if not dp[next_mask]:
+                dp[mask] = True
+                break
+
+        if dp[mask]:
+            break
+
+initial = total - 1
+print("Takahashi" if dp[initial] else "Aoki")</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>まとめ</h2>
+        <p>
+          2人ゲームでは、「相手を負け状態へ送れるか」を基準にすると勝敗を定義しやすい。
+          残っているカード集合をbitで持つことで、状態を整数として扱える。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
+
