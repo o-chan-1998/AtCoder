@@ -28,6 +28,11 @@ GitHub Pages に公開するのは、新規に作成する公開用ページの�
 
 公開記事では、既存ファイルをそのまま並べるのではなく、1問ごとに読みやすい解説記事へ再構成する。
 
+GitHub リポジトリは次の場所に作成済み。
+
+- Repository: https://github.com/o-chan-1998/AtCoder
+- GitHub Pages: https://o-chan-1998.github.io/AtCoder/
+
 ## 記事の基本構成
 
 1問につき1記事を基本とする。
@@ -116,6 +121,8 @@ Markdown ベースで記事を書ける構成にする。
 `docs/assets/abc276-e/` に、理解用画像の一部をコピーした。
 
 この試作では、学習用の `E/276/sample.py` をそのまま掲載せず、AtCoder に提出しやすい標準入力版コードとして掲載している。
+
+GitHub Pages の公開元は、`master` ブランチの `/docs` に設定済み。
 
 ## 次に検討すること
 
