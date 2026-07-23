@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC308 D - Snuke Maze | AtCoder Study Notes</title>
+    <meta name="description" content="ABC308 D - Snuke Maze の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC308 D - Snuke Maze</h1>
+          <p class="lead">
+            左上から右下へ進めるかを調べる。上下左右の移動に加えて、
+            訪問文字が <code>s n u k e</code> の繰り返しになる条件を入れる。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            グリッドの左上から右下へ、上下左右に隣接するマスへ移動する。
+            訪れる文字が <code>s → n → u → k → e → s</code> の順番になる経路が存在するか判定する。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc308/tasks/abc308_d">AtCoder ABC308 D - Snuke Maze</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          求めるのは経路の存在なので、グリッド探索でよい。
+          ただし、今いるマスの文字から次に必要な文字が一意に決まるため、
+          隣接マスのうちその文字を持つマスだけを探索候補にする。
+        </p>
+        <p>
+          同じマスに一度到達できたなら、そこから先に必要な文字はそのマスの文字だけで決まる。
+          そのため、訪問済みはマス単位で管理すれば十分。
+        </p>
+        <div class="concept-grid" aria-label="snuke 探索のイメージ">
+          <div class="concept-panel">
+            <h3>現在</h3>
+            <div class="flow" aria-hidden="true"><span>s</span><strong>→</strong><span>n</span></div>
+            <p><code>s</code> の次は <code>n</code> だけに進める。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>移動</h3>
+            <div class="flow" aria-hidden="true"><span>上下左右</span></div>
+            <p>斜め移動はできない。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>判定</h3>
+            <div class="answer-split" aria-hidden="true"><span>右下</span><strong>Yes</strong></div>
+            <p>終点に到達できれば <code>Yes</code>。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>左上の文字が <code>s</code> でなければ <code>No</code>。</li>
+            <li>左上を始点として BFS または DFS を行う。</li>
+            <li>現在の文字から、次に必要な文字を求める。</li>
+            <li>上下左右の範囲内かつ未訪問で、次の文字に一致するマスだけへ進む。</li>
+            <li>右下へ到達できれば <code>Yes</code>、探索が尽きれば <code>No</code>。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          <code>snuke</code> の中で現在の文字が何番目かを調べ、次の添字を5で割った余りにする。
+          グリッドは最大で大きいので、再帰DFSではなくキューを使う BFS にすると扱いやすい。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>from collections import deque
+
+
+H, W = map(int, input().split())
+S = [input() for _ in range(H)]
+
+word = "snuke"
+if S[0][0] != "s":
+    print("No")
+    exit()
+
+visited = [[False] * W for _ in range(H)]
+queue = deque([(0, 0)])
+visited[0][0] = True
+
+directions = ((1, 0), (-1, 0), (0, 1), (0, -1))
+
+while queue:
+    r, c = queue.popleft()
+    if r == H - 1 and c == W - 1:
+        print("Yes")
+        exit()
+
+    current_index = word.index(S[r][c])
+    next_char = word[(current_index + 1) % len(word)]
+
+    for dr, dc in directions:
+        nr = r + dr
+        nc = c + dc
+        if not (0 <= nr < H and 0 <= nc < W):
+            continue
+        if visited[nr][nc]:
+            continue
+        if S[nr][nc] != next_char:
+            continue
+
+        visited[nr][nc] = True
+        queue.append((nr, nc))
+
+print("No")</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>まとめ</h2>
+        <p>
+          グリッド探索に、次の文字だけへ進む条件を足す問題。
+          状態はマスの位置だけで足りるため、通常の BFS/DFS とほぼ同じ形で書ける。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC267 E - Erasing Vertices 2 | AtCoder Study Notes</title>
+    <meta name="description" content="ABC267 E - Erasing Vertices 2 の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC267 E - Erasing Vertices 2</h1>
+          <p class="lead">
+            各頂点を今消すときのコストを持ち、最小コストの頂点から削除していく。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            値 <code>A_i</code> を持つ頂点からなる無向グラフがある。
+            頂点を1つ削除すると、その時点で残っている隣接頂点の値の合計が操作コストになる。
+            全操作で発生するコストの最大値をできるだけ小さくしたい。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc267/tasks/abc267_e">AtCoder ABC267 E - Erasing Vertices 2</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          まず、頂点 <code>v</code> を今削除したときのコストを <code>cost[v]</code> とする。
+          これは、まだ残っている隣接頂点の <code>A</code> の合計である。
+        </p>
+        <p>
+          目的はコストの合計ではなく、途中で出る最大値を小さくすること。
+          さらに、頂点を削除すると隣接頂点の <code>cost</code> は減るだけで、増えることはない。
+          そのため、その時点で最小の <code>cost</code> を持つ頂点を削除する方針が自然になる。
+        </p>
+        <p>
+          ある時点で最小コストが <code>K</code> なら、残っているどの頂点を選んでもコストは <code>K</code> 以上である。
+          つまり、その残り集合から1つ削除する以上、<code>K</code> 未満で済ませることはできない。
+          この下限を毎回選んでいくので、記録される最大値が最小になる。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          毎回最小の <code>cost</code> を取り出すため、優先度付きキューを使う。
+          Python の <code>heapq</code> では値の更新が直接できないため、新しい <code>cost</code> を追加で push し、取り出したときに古い情報なら捨てる。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import heapq
+import sys
+
+
+def solve():
+    input = sys.stdin.readline
+    n, m = map(int, input().split())
+    a = list(map(int, input().split()))
+
+    graph = [[] for _ in range(n)]
+    for _ in range(m):
+        u, v = map(int, input().split())
+        u -= 1
+        v -= 1
+        graph[u].append(v)
+        graph[v].append(u)
+
+    cost = [0] * n
+    for v in range(n):
+        for to in graph[v]:
+            cost[v] += a[to]
+
+    heap = []
+    for v in range(n):
+        heapq.heappush(heap, (cost[v], v))
+
+    removed = [False] * n
+    answer = 0
+
+    for _ in range(n):
+        while True:
+            current_cost, v = heapq.heappop(heap)
+            if removed[v]:
+                continue
+            if current_cost != cost[v]:
+                continue
+            break
+
+        removed[v] = True
+        answer = max(answer, current_cost)
+
+        for to in graph[v]:
+            if removed[to]:
+                continue
+            cost[to] -= a[v]
+            heapq.heappush(heap, (cost[to], to))
+
+    print(answer)
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          削除する頂点自身の値 <code>A_v</code> は、その操作のコストではない。
+          見るべきなのは、残っている隣接頂点の値の合計である。
+          また、ヒープ内には古い <code>cost</code> が残るので、取り出し時の検証を忘れない。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          各頂点の現在コストを管理し、最小コストの頂点から削除する。
+          削除によって隣接頂点のコストを下げ、発生したコストの最大値を答えとして記録する。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

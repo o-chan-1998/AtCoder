@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC268 D - Unique Username | AtCoder Study Notes</title>
+    <meta name="description" content="ABC268 D - Unique Username の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC268 D - Unique Username</h1>
+          <p class="lead">
+            使う文字列の順番と、間に入れるアンダースコアの個数で候補は決まる。
+            長さ16以下という制限を使い、作れる候補を全探索する。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            <code>N</code> 個の文字列を好きな順番に並べ、隣同士の間に1個以上の <code>_</code> を入れて
+            ユーザー名を作る。長さが3以上16以下で、禁止文字列のどれとも一致しないものを1つ出力する。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc268/tasks/abc268_d">AtCoder ABC268 D - Unique Username</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          候補は自由な文字列ではなく、<code>S_i</code> の並べ方と <code>_</code> の個数だけで決まる。
+          <code>N</code> は最大8なので、文字列の順列は最大でも <code>8!</code> 通りで試せる。
+        </p>
+        <p>
+          ある順番を固定したら、まず各すき間に <code>_</code> を1個ずつ置く。
+          その時点の長さを基準にして、16文字まで余っている文字数を各すき間へ配る。
+          候補が禁止集合に入っていなければ、その場で答えにできる。
+        </p>
+        <div class="concept-grid" aria-label="候補生成のイメージ">
+          <div class="concept-panel">
+            <h3>順番</h3>
+            <div class="flow" aria-hidden="true"><span>ab</span><strong>→</strong><span>cd</span></div>
+            <p><code>S_i</code> の並べ方を1つ固定する。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>すき間</h3>
+            <div class="flow" aria-hidden="true"><span>_</span><strong>+</strong><span>余り</span></div>
+            <p>各すき間には最低1個の <code>_</code> が必要。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>判定</h3>
+            <div class="answer-split" aria-hidden="true"><span>候補</span><strong>OK</strong></div>
+            <p>長さと禁止文字列への一致を確認する。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>禁止文字列 <code>T_i</code> を集合に入れる。</li>
+            <li><code>S_i</code> のすべての順列を試す。</li>
+            <li>各順列について、最低限の <code>_</code> を入れた長さを計算する。</li>
+            <li>16文字まで追加できる <code>_</code> を、再帰で各すき間へ配る。</li>
+            <li>禁止集合にない候補が見つかったら出力し、なければ <code>-1</code> を出力する。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          <code>N = 1</code> のときはすき間がないため、<code>S_1</code> そのものだけを判定する。
+          禁止文字列は最大で多いので、リストではなく集合で照合する。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>from itertools import permutations
+
+
+def build_username(order, underscore_counts):
+    username = order[0]
+    for i, count in enumerate(underscore_counts):
+        username += "_" * count
+        username += order[i + 1]
+    return username
+
+
+def search(order, gap_index, remaining_extra, counts, forbidden):
+    if gap_index == len(order) - 1:
+        candidate = build_username(order, counts)
+        if 3 <= len(candidate) <= 16 and candidate not in forbidden:
+            return candidate
+        return None
+
+    for extra in range(remaining_extra + 1):
+        counts.append(1 + extra)
+        answer = search(order, gap_index + 1, remaining_extra - extra, counts, forbidden)
+        if answer is not None:
+            return answer
+        counts.pop()
+
+    return None
+
+
+N, M = map(int, input().split())
+S = [input() for _ in range(N)]
+forbidden = {input() for _ in range(M)}
+
+for order in permutations(S):
+    base_length = sum(len(word) for word in order) + (N - 1)
+    if base_length > 16:
+        continue
+
+    if N == 1:
+        candidate = order[0]
+        if 3 <= len(candidate) <= 16 and candidate not in forbidden:
+            print(candidate)
+            exit()
+        continue
+
+    answer = search(order, 0, 16 - base_length, [], forbidden)
+    if answer is not None:
+        print(answer)
+        exit()
+
+print(-1)</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>まとめ</h2>
+        <p>
+          この問題は、文字列を直接ひねり出すのではなく、候補の作り方を分解するのが重要。
+          順列とアンダースコアの配分を全探索し、禁止集合で高速に除外すればよい。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

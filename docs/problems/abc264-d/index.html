@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC264 D - "redocta".swap(i,i+1) | AtCoder Study Notes</title>
+    <meta name="description" content="ABC264 D - redocta.swap(i,i+1) の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC264 D - "redocta".swap(i,i+1)</h1>
+          <p class="lead">
+            隣接交換の最小回数は、目標順と逆になっている文字の組の数として数えられる。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            <code>atcoder</code> の文字を並べ替えた文字列 <code>S</code> が与えられる。
+            隣り合う2文字の交換だけを使って <code>atcoder</code> にするとき、必要な最小交換回数を求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc264/tasks/abc264_d">AtCoder ABC264 D - "redocta".swap(i,i+1)</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          隣接交換では、1回の操作で隣り合う2文字の前後関係だけが入れ替わる。
+          そのため、目標の <code>atcoder</code> と比べて前後関係が逆になっている文字の組は、いつか必ず追い越しが必要になる。
+        </p>
+        <p>
+          逆に、逆になっている組を1つずつ直していけば目標順にできる。
+          したがって、答えは「目標順に対する逆転数」になる。
+        </p>
+        <pre><code>atcoder の順位:
+a t c o d e r
+0 1 2 3 4 5 6
+
+catredo:
+c a t r e d o
+2 0 1 6 5 4 3</code></pre>
+        <p>
+          あとは順位列の中で、左の数が右の数より大きい組を数えればよい。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          文字列の長さは7なので、すべての組 <code>i &lt; j</code> を二重ループで見れば十分。
+          複雑なデータ構造は不要で、文字を順位に変換してから逆転数を数えるだけでよい。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>def solve():
+    s = input().strip()
+    target = "atcoder"
+
+    rank = {}
+    for i, ch in enumerate(target):
+        rank[ch] = i
+
+    order = []
+    for ch in s:
+        order.append(rank[ch])
+
+    answer = 0
+    for i in range(len(order)):
+        for j in range(i + 1, len(order)):
+            if order[i] &gt; order[j]:
+                answer += 1
+
+    print(answer)
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          実際の交換手順をシミュレーションしようとすると、どの交換を選ぶべきかで迷いやすい。
+          この問題で必要なのは手順そのものではなく、最小回数だけである。
+          隣接交換は「2文字の追い越し」を1回ずつ行う操作だと見ると、逆転数に帰着できる。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          文字を目標文字列での順位に変換し、順位列の逆転数を数える。
+          その個数が、<code>atcoder</code> にするための隣接交換の最小回数になる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

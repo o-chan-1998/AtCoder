@@ -1,3 +1,5 @@
 D/
 E/
-
+visual_*.py
+**/visual_*.py
+docs/scripts/

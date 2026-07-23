@@ -154,43 +154,127 @@ h2 {
   margin-bottom: 0;
 }
 
-.article-list {
+.problem-group {
   display: grid;
   gap: 1rem;
 }
 
-.article-card {
+.problem-group + .problem-group {
+  margin-top: 2.5rem;
+}
+
+.group-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.75rem;
+}
+
+.group-heading h2 {
+  margin-bottom: 0;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.problem-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.problem-table th,
+.problem-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 0.8rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.problem-table th {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.problem-table td:first-child {
+  width: 8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.problem-table td:nth-child(2) {
+  width: 12rem;
+  font-weight: 700;
+}
+
+.problem-table td:last-child {
+  width: 5rem;
+  white-space: nowrap;
+}
+
+.problem-table a {
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.article-figure {
+  margin: 1.5rem 0;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 1.25rem;
+  overflow: hidden;
   background: #fff;
 }
 
-.article-card h2 {
-  margin-bottom: 0.6rem;
+.article-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
-.article-card h2 a {
-  color: var(--ink);
-  text-decoration: none;
-}
-
-.article-card h2 a:hover {
-  color: var(--accent);
-}
-
-.article-meta {
-  margin: 0 0 0.35rem;
+.article-figure figcaption {
+  border-top: 1px solid var(--line);
+  padding: 0.75rem 0.9rem;
   color: var(--muted);
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 0.92rem;
 }
 
-.read-link {
-  display: inline-flex;
-  margin-top: 1rem;
-  font-weight: 700;
-  text-decoration: none;
+.note-link {
+  margin: 1.4rem 0;
+  border-left: 5px solid var(--accent);
+  padding: 1rem 1.1rem;
+  background: var(--soft);
+}
+
+.note-link h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1rem;
+}
+
+.note-link p {
+  margin: 0;
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 1.4rem;
+}
+
+.comparison-panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fff;
+}
+
+.comparison-panel h3 {
+  margin: 0 0 0.65rem;
+  font-size: 1.05rem;
 }
 
 .concept-grid {

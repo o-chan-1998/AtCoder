@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC436 D - Teleport Maze | AtCoder Study Notes</title>
+    <meta name="description" content="ABC436 D - Teleport Maze の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC436 D - Teleport Maze</h1>
+          <p class="lead">
+            歩行もワープも1回の行動として数える迷路の最短距離問題。
+            同じ文字のワープ先をまとめて持ち、各文字のワープ展開は一度だけ行う。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            迷路には空きマス、障害物、英小文字のワープマスがある。
+            上下左右への歩行と、同じ文字のワープマスへの移動を使い、左上から右下への最小行動回数を求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc436/tasks/abc436_d">AtCoder ABC436 D - Teleport Maze</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          歩行もワープもコストは1なので、最短行動回数は BFS で求められる。
+          各マスからは上下左右へ進めるほか、英小文字のマスなら同じ文字の全マスへワープできる。
+        </p>
+        <p>
+          ただし、同じ文字のワープを毎回すべて展開すると重くなる。
+          ある文字のワープ先一覧は、BFSでその文字に初めて到達したときに一度だけ展開すればよい。
+          その後に同じ文字へ到達しても、前より得なワープにはならないから。
+        </p>
+        <div class="concept-grid" aria-label="ワープ付き BFS のイメージ">
+          <div class="concept-panel">
+            <h3>歩行</h3>
+            <div class="flow" aria-hidden="true"><span>隣接</span><strong>+1</strong></div>
+            <p>障害物と盤面外には進めない。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>ワープ</h3>
+            <div class="flow" aria-hidden="true"><span>a</span><strong>→</strong><span>a</span></div>
+            <p>同じ文字のマスへ1回で移動できる。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>省略</h3>
+            <div class="answer-split" aria-hidden="true"><span>展開済み</span><strong>skip</strong></div>
+            <p>同じ文字の全展開は1回だけ。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>各英小文字について、その文字が置かれているマスの一覧を先に作る。</li>
+            <li><code>dist[r][c]</code> を始点からの最小行動回数として BFS する。</li>
+            <li>各マスから上下左右の空きマスまたはワープマスへ進む。</li>
+            <li>現在マスが英小文字なら、同じ文字の全マスへ距離 <code>+1</code> で進む。</li>
+            <li>同じ文字のワープ展開は <code>used_warp</code> で一度だけにする。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          ワープ先一覧を毎回なめると、同じ文字が多い盤面で間に合わない。
+          <code>used_warp</code> に入っている文字は再展開しないことで、各マスは歩行探索とワープ探索で高々定数回だけ扱われる。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>from collections import deque
+
+
+H, W = map(int, input().split())
+S = [input() for _ in range(H)]
+
+warp_cells = {}
+for r in range(H):
+    for c in range(W):
+        ch = S[r][c]
+        if "a" <= ch <= "z":
+            if ch not in warp_cells:
+                warp_cells[ch] = []
+            warp_cells[ch].append((r, c))
+
+dist = [[-1] * W for _ in range(H)]
+queue = deque([(0, 0)])
+dist[0][0] = 0
+used_warp = set()
+directions = ((1, 0), (-1, 0), (0, 1), (0, -1))
+
+while queue:
+    r, c = queue.popleft()
+    current = dist[r][c]
+
+    for dr, dc in directions:
+        nr = r + dr
+        nc = c + dc
+        if not (0 <= nr < H and 0 <= nc < W):
+            continue
+        if S[nr][nc] == "#":
+            continue
+        if dist[nr][nc] != -1:
+            continue
+
+        dist[nr][nc] = current + 1
+        queue.append((nr, nc))
+
+    ch = S[r][c]
+    if "a" <= ch <= "z" and ch not in used_warp:
+        used_warp.add(ch)
+        for nr, nc in warp_cells[ch]:
+            if dist[nr][nc] != -1:
+                continue
+            dist[nr][nc] = current + 1
+            queue.append((nr, nc))
+
+print(dist[H - 1][W - 1])</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>まとめ</h2>
+        <p>
+          行動回数がすべて1なので、基本は BFS。
+          ワープは同じ文字のマスへの一括遷移だが、文字ごとに一度だけ展開すると無駄な全探索を避けられる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

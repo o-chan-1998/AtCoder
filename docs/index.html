@@ -21,50 +21,117 @@
     </header>
 
     <main>
-      <section class="wrap intro">
-        <div class="problem-box">
-          <span class="problem-tag">Index</span>
-          <h2>公開済みの記事</h2>
-          <p>
-            現在は試作として1問だけ公開しています。今後、同じ形式で問題ごとの記事を追加していきます。
-          </p>
-        </div>
-      </section>
-
       <section class="wrap article-section">
-        <div class="article-list">
-          <article class="article-card">
-            <p class="article-meta">ABC276 E</p>
-            <h2><a href="./problems/abc276-e/">Round Trip</a></h2>
-            <p>
-              <code>S</code> の隣接マス同士が、<code>S</code> を通らずにつながっているかを調べる問題。
-            </p>
-            <a class="read-link" href="./problems/abc276-e/">記事を読む</a>
-          </article>
-          <article class="article-card">
-            <p class="article-meta">ABC307 E</p>
-            <h2><a href="./problems/abc307-e/">Distinct Adjacent</a></h2>
-            <p>
-              1番目の色との一致・不一致だけを状態にして、円環の隣接制約を数える問題。
-            </p>
-            <a class="read-link" href="./problems/abc307-e/">記事を読む</a>
-          </article>
-          <article class="article-card">
-            <p class="article-meta">ABC322 E</p>
-            <h2><a href="./problems/abc322-e/">Product Development</a></h2>
-            <p>
-              各パラメータの到達度を状態として持ち、開発案を選ぶかどうかで最小コストを更新する問題。
-            </p>
-            <a class="read-link" href="./problems/abc322-e/">記事を読む</a>
-          </article>
-          <article class="article-card">
-            <p class="article-meta">ABC354 E</p>
-            <h2><a href="./problems/abc354-e/">Remove Pairs</a></h2>
-            <p>
-              残っているカード集合をbitで表し、相手を負け状態にできる手があるかを判定する問題。
-            </p>
-            <a class="read-link" href="./problems/abc354-e/">記事を読む</a>
-          </article>
+        <div class="problem-group">
+          <div class="group-heading">
+            <h2>D問題</h2>
+          </div>
+          <div class="table-scroll">
+            <table class="problem-table">
+              <thead>
+                <tr>
+                  <th scope="col">Contest</th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Key Point</th>
+                  <th scope="col">Article</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>ABC264 D</td>
+                  <td>"redocta".swap(i,i+1)</td>
+                  <td>文字を <code>atcoder</code> での順位に直し、順位列の逆転数を数える。</td>
+                  <td><a href="./problems/abc264-d/">Open</a></td>
+                </tr>
+                <tr>
+                  <td>ABC268 D</td>
+                  <td>Unique Username</td>
+                  <td>文字列の順列と、余った文字数の <code>_</code> の配り方を全探索する。</td>
+                  <td><a href="./problems/abc268-d/">Open</a></td>
+                </tr>
+                <tr>
+                  <td>ABC308 D</td>
+                  <td>Snuke Maze</td>
+                  <td><code>snuke</code> の次の文字だけに進めるグリッド探索として見る。</td>
+                  <td><a href="./problems/abc308-d/">Open</a></td>
+                </tr>
+                <tr>
+                  <td>ABC338 D</td>
+                  <td>Island Tour</td>
+                  <td>短い道を基準にし、封鎖で増える分を橋ごとに差分で集計する。</td>
+                  <td><a href="./problems/abc338-d/">Open</a></td>
+                </tr>
+                <tr>
+                  <td>ABC356 D</td>
+                  <td>Masked Popcount</td>
+                  <td><code>M</code> の1ビットだけを見て、<code>0..N</code> でそのビットが立つ回数を周期で数える。</td>
+                  <td><a href="./problems/abc356-d/">Open</a></td>
+                </tr>
+                <tr>
+                  <td>ABC436 D</td>
+                  <td>Teleport Maze</td>
+                  <td>歩行とワープを同じコストの辺として扱い、各文字のワープ展開は1回に抑える。</td>
+                  <td><a href="./problems/abc436-d/">Open</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="problem-group">
+          <div class="group-heading">
+            <h2>E問題</h2>
+          </div>
+          <div class="table-scroll">
+            <table class="problem-table">
+              <thead>
+                <tr>
+                  <th scope="col">Contest</th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Key Point</th>
+                  <th scope="col">Article</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>ABC267 E</td>
+                  <td>Erasing Vertices 2</td>
+                  <td>各頂点を今消すときのコストを管理し、最小コストの頂点から削除する。</td>
+                  <td><a href="./problems/abc267-e/">Open</a></td>
+                </tr>
+                <tr>
+                  <td>ABC276 E</td>
+                  <td>Round Trip</td>
+                  <td><code>S</code> の隣接マス同士が、<code>S</code> を通らずにつながっているかを見る。</td>
+                  <td><a href="./problems/abc276-e/">Open</a></td>
+                </tr>
+                <tr>
+                  <td>ABC298 E</td>
+                  <td>Unfair Sugoroku</td>
+                  <td>現在位置と手番を状態にし、各出目の先の勝率を平均するDPで求める。</td>
+                  <td><a href="./problems/abc298-e/">Open</a></td>
+                </tr>
+                <tr>
+                  <td>ABC307 E</td>
+                  <td>Distinct Adjacent</td>
+                  <td>1番目の色との一致・不一致だけを状態にして、円環の制約を数える。</td>
+                  <td><a href="./problems/abc307-e/">Open</a></td>
+                </tr>
+                <tr>
+                  <td>ABC322 E</td>
+                  <td>Product Development</td>
+                  <td>各パラメータの到達度を状態として持ち、最小コストを更新する。</td>
+                  <td><a href="./problems/abc322-e/">Open</a></td>
+                </tr>
+                <tr>
+                  <td>ABC354 E</td>
+                  <td>Remove Pairs</td>
+                  <td>残っているカード集合をbitで表し、相手を負け状態にできる手を探す。</td>
+                  <td><a href="./problems/abc354-e/">Open</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
     </main>

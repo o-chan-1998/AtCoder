@@ -46,37 +46,198 @@
       <section class="wrap article-section" id="idea">
         <h2>考察</h2>
         <p>
-          円環なので、最後の位置は1番目の位置とも隣接する。そこで1番目の色を一度固定して考える。
-          途中で必要なのは、今の位置の色が1番目と同じか、違うかだけ。
+          まず、直線に並んでいるだけなら考え方は単純。
+          位置 <code>1</code> は <code>M</code> 通り、位置 <code>2</code> 以降は直前と違う色を選ぶだけなので、それぞれ <code>M - 1</code> 通りになる。
+          しかし、この問題は円環なので、最後に位置 <code>N</code> と位置 <code>1</code> も比べる必要がある。
         </p>
-        <div class="concept-grid" aria-label="状態遷移のイメージ">
-          <div class="concept-panel">
-            <h3>same</h3>
-            <div class="flow" aria-hidden="true"><span>1番目と同じ</span></div>
-            <p>今見ている位置が、固定した1番目の色と同じ。</p>
-          </div>
-          <div class="concept-panel">
-            <h3>diff</h3>
-            <div class="flow" aria-hidden="true"><span>1番目と違う</span></div>
-            <p>今見ている位置が、固定した1番目の色と違う。</p>
-          </div>
-          <div class="concept-panel">
-            <h3>最後</h3>
-            <div class="answer-split" aria-hidden="true"><span>diff</span><strong>OK</strong></div>
-            <p>円環を閉じるため、最後は1番目と違う必要がある。</p>
-          </div>
-        </div>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/cycle-constraint.png" alt="円環では位置1と位置Nも隣接することを示す図">
+          <figcaption>円環では、最後に位置 <code>N</code> と位置 <code>1</code> の色も確認する必要がある。</figcaption>
+        </figure>
+        <aside class="note-link">
+          <h3>派生学習</h3>
+          <p>
+            直線の場合と比べると、円環で何が増えているのかが見えやすい。
+            <a href="../../notes/linear-vs-cycle-coloring/">直線と円環の違いを見る</a>
+          </p>
+        </aside>
+        <h2>超初心者向けの見方</h2>
+        <p>
+          この問題では、色を左から順に決めていく。
+          ただし円環なので、最後に位置 <code>N</code> と位置 <code>1</code> も比べる。
+          そのため、位置 <code>1</code> の色を基準色として覚えておく。
+        </p>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/beginner-anchor-color.png" alt="位置1の色を基準色にする理由を説明する図">
+          <figcaption>最後に位置 <code>N</code> と位置 <code>1</code> を比べるため、位置 <code>1</code> の色を基準にする。</figcaption>
+        </figure>
+        <p>
+          <code>same</code> と <code>diff</code> は、色の名前ではない。
+          「最後に決めた位置が基準色と同じ並べ方はいくつあるか」
+          「最後に決めた位置が基準色と違う並べ方はいくつあるか」
+          を入れる箱として見る。
+        </p>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/beginner-boxes-not-colors.png" alt="sameとdiffが色ではなく個数を入れる箱であることを説明する図">
+          <figcaption><code>same</code> / <code>diff</code> は色ではなく、条件を満たす並べ方の個数を入れる箱。</figcaption>
+        </figure>
+        <p>
+          次の色を1つ選ぶときは、質問を2つに分ける。
+          まず、直前の色と同じなら選べない。
+          次に、選べた色が基準色なら <code>same</code>、基準色でなければ <code>diff</code> に入れる。
+        </p>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/beginner-two-questions.png" alt="次の色を選ぶときの質問を2つに分ける図">
+          <figcaption>直前を見る目的は「選べるか」の判定。基準色を見る目的は「どの箱に入るか」の判定。</figcaption>
+        </figure>
+        <p>
+          この箱の移動をまとめると、更新式になる。
+          古い <code>same</code> からは <code>M - 1</code> 通りで新しい <code>diff</code> へ行く。
+          古い <code>diff</code> からは、1通りで新しい <code>same</code> へ、<code>M - 2</code> 通りで新しい <code>diff</code> へ行く。
+        </p>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/beginner-formula-from-boxes.png" alt="sameとdiffの箱から更新式を作る図">
+          <figcaption>箱から箱への移動を足し合わせると、DPの更新式になる。</figcaption>
+        </figure>
+        <h2>別観点: M = 5 でさらに見る</h2>
+        <p>
+          もう一度、別の数字で見る。
+          今度は色が5種類あり、基準色を紫に固定したとする。
+          ここでも大事なのは、具体的な並びを全部覚えるのではなく、最後の色だけを見て <code>same</code> / <code>diff</code> の箱へ仕分けること。
+        </p>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/beginner-m5-sort-sequences.png" alt="Mが5で基準色が紫のとき並べ方をsameとdiffへ仕分ける図">
+          <figcaption>途中の具体的な並びは忘れてよい。最後が基準色かどうかだけで箱に入れる。</figcaption>
+        </figure>
+        <p>
+          直前が <code>same</code> の場合、直前の色は基準色の紫。
+          次の色に紫は選べないので、残り4色を選ぶ。
+          どれも紫ではないため、すべて <code>diff</code> へ行く。
+        </p>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/beginner-m5-same-branch.png" alt="Mが5で基準色が紫のときsameからdiffへ進む図">
+          <figcaption><code>same</code> からは、基準色を選べない。残り <code>M - 1</code> 通りは全部 <code>diff</code>。</figcaption>
+        </figure>
+        <p>
+          直前が <code>diff</code> の場合、たとえば直前の色を青として考える。
+          次に青は選べないが、基準色の紫は選べる。
+          紫を選べば <code>same</code>、紫でも青でもない色を選べば <code>diff</code> へ行く。
+        </p>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/beginner-m5-diff-branch.png" alt="Mが5で基準色が紫のときdiffからsameとdiffへ分岐する図">
+          <figcaption><code>diff</code> からは、基準色を選ぶ1通りで <code>same</code>、基準色でも直前でもない <code>M - 2</code> 通りで <code>diff</code>。</figcaption>
+        </figure>
+        <p>
+          最後に欲しいのは <code>diff</code> の箱。
+          なぜなら、位置 <code>1</code> は基準色なので、位置 <code>N</code> が基準色なら円環の条件に反するから。
+          固定した基準色に対して <code>diff</code> を数えたあと、基準色そのものの選び方 <code>M</code> 通りを掛ける。
+        </p>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/beginner-m5-final-goal.png" alt="Mが5で基準色が紫のとき最後にdiffが必要であることを示す図">
+          <figcaption>最後が基準色と違う箱だけが有効。最後に基準色の選び方を掛ける。</figcaption>
+        </figure>
+        <p>
+          最後に位置 <code>1</code> と比べたいので、位置 <code>1</code> の色を特別扱いする。
+          ここでは、位置 <code>1</code> の色を「基準色」と呼ぶ。
+          いったん基準色を1つに固定して数え、最後に基準色の選び方 <code>M</code> 通りを掛ける。
+        </p>
+        <p>
+          例として、色が4種類あり、基準色を赤に固定したとする。
+          このとき、青・緑・黄はどれも「赤ではない色」としてまとめて扱える。
+          最後に知りたいのは、位置 <code>N</code> が赤か、赤ではないかだから。
+        </p>
+        <p>
+          そこで、色の名前を全部覚えるのではなく、最後に決めた位置が基準色かどうかだけを見る。
+        </p>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/state-compression.png" alt="具体的な色ではなく基準色との関係をsameとdiffに圧縮する図">
+          <figcaption>色名ではなく、基準色と同じか違うかだけを状態にする。</figcaption>
+        </figure>
+        <p>
+          <code>same</code> は、最後に決めた位置が基準色と同じである並べ方の数。
+          <code>diff</code> は、最後に決めた位置が基準色と違う並べ方の数。
+          どちらも「色」ではなく「並べ方の個数」を入れる箱だと考える。
+        </p>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/dp-counts-example.png" alt="sameとdiffが並べ方の個数を表す箱であることを示す表">
+          <figcaption><code>same</code> と <code>diff</code> は状態名であり、その中身は並べ方の個数。</figcaption>
+        </figure>
+        <p>
+          初期状態は、位置 <code>1</code> だけを決めた状態。
+          基準色に固定しているので、最後の位置は基準色と同じ。
+          したがって <code>same = 1</code>、<code>diff = 0</code> から始める。
+        </p>
+        <p>
+          次に、位置を1つ追加するときの動きを考える。
+          ここで大事なのは、2段階に分けること。
+          まず「直前の色と同じ色は選べない」という隣接条件で候補を消す。
+          そのあと、選んだ色が基準色かどうかで、次の箱を <code>same</code> と <code>diff</code> に振り分ける。
+        </p>
+        <p>
+          直前が <code>same</code> の場合、具体例では直前の色が赤。
+          隣接条件により、次の色に赤は選べない。
+          つまり、青・緑・黄のどれかを選ぶしかない。
+          どれを選んでも赤ではないので、次の状態は必ず <code>diff</code> になる。
+        </p>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/transition-from-same.png" alt="今がsameの場合、次に基準色は選べずdiffへ移る図">
+          <figcaption><code>same</code> からは、基準色以外を選ぶしかない。一般化すると <code>M - 1</code> 通りで <code>diff</code> へ移る。</figcaption>
+        </figure>
+        <p>
+          直前が <code>diff</code> の場合、具体例では直前の色が青だと考えてよい。
+          隣接条件により、次の色に青は選べない。
+          しかし赤は選べる。赤は直前の青とは違うから。
+          赤を選ぶと次の状態は <code>same</code> になる。
+          これは基準色を選ぶ1通り。
+        </p>
+        <p>
+          同じく直前が青のとき、緑や黄も選べる。
+          これらは基準色ではないので、次の状態は <code>diff</code> になる。
+          選べない色は、基準色の赤ではなく、直前の青。
+          ただし <code>diff</code> のままに残りたい場合は、赤も選ばない。
+          だから、赤と青の2色を除いた <code>M - 2</code> 通りが <code>diff</code> へ行く。
+        </p>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/transition-from-diff.png" alt="今がdiffの場合、基準色を選ぶとsame、それ以外を選ぶとdiffになる図">
+          <figcaption><code>diff</code> からは、基準色を選ぶ1通りで <code>same</code>、基準色でも直前でもない色を選ぶ <code>M - 2</code> 通りで <code>diff</code> へ移る。</figcaption>
+        </figure>
+        <p>
+          ここまでを式にすると、次のようになる。
+          新しい <code>same</code> は、古い <code>diff</code> から基準色を選ぶ1通りだけで作られる。
+          新しい <code>diff</code> は、古い <code>same</code> から <code>M - 1</code> 通り、古い <code>diff</code> から <code>M - 2</code> 通りで作られる。
+        </p>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/state-transition.png" alt="sameとdiffの状態遷移を示す図">
+          <figcaption><code>same</code> と <code>diff</code> の間を、選べる色の数で遷移する。</figcaption>
+        </figure>
+        <pre><code>next_same = diff
+next_diff = same * (M - 1) + diff * (M - 2)</code></pre>
+        <p>
+          最後に位置 <code>N</code> まで決め終えたとき、円環として成立するには位置 <code>N</code> が位置 <code>1</code> と違う色でなければならない。
+          位置 <code>1</code> は基準色なので、有効なのは最後が基準色ではない <code>diff</code> の並べ方だけ。
+          ここまでは基準色を1つに固定していたので、最後に基準色の選び方 <code>M</code> 通りを掛ける。
+        </p>
+        <figure class="article-figure">
+          <img src="../../assets/abc307-e/final-count.png" alt="基準色の選び方M通りと最後がdiffである数を掛ける図">
+          <figcaption>固定した基準色に対する <code>diff</code> を数え、最後に基準色の選び方を掛ける。</figcaption>
+        </figure>
+        <p>
+          まとめると、色を選ぶ瞬間は直前の色を見る。
+          しかし、DPの状態として残すのは基準色との関係だけ。
+          最後に円環を閉じるとき、必要なのが「基準色と違うか」だから、この情報だけ残せば足りる。
+        </p>
       </section>
 
       <section class="band">
         <div class="wrap article-section">
           <h2>解法方針</h2>
           <ol class="steps">
-            <li>1番目の色を固定し、最後に <code>M</code> 倍する。</li>
-            <li><code>same</code> を「今の色が1番目と同じ」、<code>diff</code> を「違う」とする。</li>
-            <li>次の位置が <code>same</code> になるには、直前が <code>diff</code> である必要がある。</li>
-            <li>次の位置が <code>diff</code> になる選び方を、直前の状態ごとに数える。</li>
-            <li>最後の位置は1番目と違う必要があるので、答えは <code>M * diff</code>。</li>
+            <li>位置 <code>1</code> の色を固定し、基準色として扱う。</li>
+            <li><code>same</code> を「現在位置の色が基準色と同じ」、<code>diff</code> を「基準色と違う」と定義する。</li>
+            <li>初期状態は位置 <code>1</code> だけを見ているので、<code>same = 1</code>、<code>diff = 0</code>。</li>
+            <li>位置 <code>2</code> から <code>N</code> まで、隣接制約を守るように <code>same</code> と <code>diff</code> を更新する。</li>
+            <li>最後は位置 <code>N</code> が基準色と違う必要があるため、固定した基準色に対する有効数は <code>diff</code>。</li>
+            <li>基準色の選び方が <code>M</code> 通りあるので、答えは <code>M * diff</code>。</li>
           </ol>
         </div>
       </section>
@@ -84,8 +245,12 @@
       <section class="wrap article-section" id="implementation">
         <h2>実装の注意点</h2>
         <p>
-          <code>same</code> から <code>diff</code> へは、1番目以外の色を選ぶので <code>M - 1</code> 通り。
-          <code>diff</code> から <code>diff</code> へは、直前の色と1番目の色を避けるので <code>M - 2</code> 通り。
+          更新式では、古い <code>same</code> と <code>diff</code> を同時に使う。
+          片方を先に上書きするともう片方の計算が壊れるので、<code>next_same</code> と <code>next_diff</code> を作ってから代入する。
+        </p>
+        <p>
+          すべての計算は指定された法で行う。
+          最後の <code>M</code> 倍も忘れずに同じ法で取る。
         </p>
       </section>
 
@@ -110,11 +275,15 @@ print((M * diff) % MOD)</code></pre>
       <section class="wrap article-section">
         <h2>まとめ</h2>
         <p>
-          円環をそのまま扱うと最後と最初の関係が邪魔になる。
-          1番目の色を固定し、現在地が1番目と同じか違うかだけを見ると、状態数を小さくできる。
+          円環をそのまま扱うと、最後に位置 <code>1</code> との関係を確認する必要がある。
+          位置 <code>1</code> の色を固定し、現在位置がその色と同じか違うかだけを追うことで、
+          最後の条件まで自然に扱える。
+        </p>
+        <p>
+          この問題は実装量よりも、状態をどう圧縮するかが本質。
+          具体的な色ではなく、基準色との関係に注目するのが重要だった。
         </p>
       </section>
     </main>
   </body>
 </html>
-

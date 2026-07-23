@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC356 D - Masked Popcount | AtCoder Study Notes</title>
+    <meta name="description" content="ABC356 D - Masked Popcount の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC356 D - Masked Popcount</h1>
+          <p class="lead">
+            <code>k</code> を全列挙せず、<code>M</code> で残るビットごとに、<code>0..N</code> で1が何回立つかを数える。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            <code>k = 0..N</code> について <code>popcount(k &amp; M)</code> を足し合わせ、
+            その値を <code>998244353</code> で割った余りとして求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc356/tasks/abc356_d">AtCoder ABC356 D - Masked Popcount</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          <code>N</code> が大きいため、<code>k</code> を1つずつ調べることはできない。
+          ただし、式に出てくる <code>&amp;</code> と <code>popcount</code> はどちらもビット単位で考えられる。
+        </p>
+        <p>
+          <code>M</code> のビットが0である場所は、<code>k &amp; M</code> でも必ず0になる。
+          よって、答えに寄与するのは <code>M</code> のビットが1である位置だけである。
+        </p>
+        <p>
+          各ビット位置 <code>i</code> について、<code>0..N</code> の中で <code>2^i</code> の位が1になる回数を数える。
+          その回数を、<code>M</code> の1ビットの位置だけ足せばよい。
+        </p>
+        <pre><code>2^i の位:
+0 が 2^i 個
+1 が 2^i 個
+この周期を繰り返す</code></pre>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          <code>0..N</code> には <code>N + 1</code> 個の数がある。
+          <code>2^i</code> の位は周期 <code>2^(i+1)</code> で、各周期に <code>2^i</code> 個の1がある。
+          端数部分では、1が出る区間に入った分だけを足す。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>MOD = 998244353
+
+
+def count_ones_until_n(n, bit_index):
+    total_numbers = n + 1
+    one_length = 1 &lt;&lt; bit_index
+    cycle_length = one_length * 2
+
+    full_cycles = total_numbers // cycle_length
+    remainder = total_numbers % cycle_length
+
+    ones = full_cycles * one_length
+    extra = remainder - one_length
+    if extra &lt; 0:
+        extra = 0
+    if extra &gt; one_length:
+        extra = one_length
+
+    return ones + extra
+
+
+def solve():
+    n, m = map(int, input().split())
+
+    answer = 0
+    for bit_index in range(60):
+        if ((m &gt;&gt; bit_index) &amp; 1) == 0:
+            continue
+        answer += count_ones_until_n(n, bit_index)
+        answer %= MOD
+
+    print(answer)
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          <code>popcount</code> を各 <code>k</code> に対して計算する発想から離れることが大切。
+          「各ビットが答えに何回1として寄与するか」を数えると、60個程度のビットを見るだけで済む。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          <code>M</code> の1ビットだけを対象にし、<code>0..N</code> でそのビットが立つ回数を周期で数える。
+          各ビットの寄与を足し合わせたものが答えになる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

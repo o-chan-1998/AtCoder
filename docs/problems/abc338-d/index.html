@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC338 D - Island Tour | AtCoder Study Notes</title>
+    <meta name="description" content="ABC338 D - Island Tour の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC338 D - Island Tour</h1>
+          <p class="lead">
+            円環上の移動を、短い道を使う基準距離と、橋を封鎖したときに増える距離に分ける。
+            橋ごとの増加量は差分配列でまとめて更新する。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            <code>N</code> 個の島が円状につながっている。指定された島を順番に訪れるツアーについて、
+            橋を1本封鎖したときのツアー長の最小値を求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc338/tasks/abc338_d">AtCoder ABC338 D - Island Tour</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          円上の2点間には、橋番号が増える向きの道と、反対側を回る道の2通りがある。
+          まず各移動で短いほうを使った距離を合計し、これを基準距離にする。
+        </p>
+        <p>
+          ある橋を封鎖しても、短いほうの道にその橋が含まれていなければ、その移動の距離は変わらない。
+          含まれている場合だけ、反対側の道へ回る必要があり、
+          増加量は <code>長い距離 - 短い距離</code> になる。
+        </p>
+        <div class="concept-grid" aria-label="円環上の増加量のイメージ">
+          <div class="concept-panel">
+            <h3>基準</h3>
+            <div class="flow" aria-hidden="true"><span>短い道</span><strong>Σ</strong></div>
+            <p>各移動の短い距離を足す。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>影響</h3>
+            <div class="flow" aria-hidden="true"><span>封鎖橋</span><strong>∈</strong><span>短い道</span></div>
+            <p>含まれると反対側へ回る。</p>
+          </div>
+          <div class="concept-panel">
+            <h3>答え</h3>
+            <div class="answer-split" aria-hidden="true"><span>基準+増加</span><strong>min</strong></div>
+            <p>橋ごとの合計から最小を選ぶ。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>隣り合う訪問先 <code>X_i</code> と <code>X_{i+1}</code> の移動を1つずつ見る。</li>
+            <li>2通りの距離のうち短いほうを基準距離に足す。</li>
+            <li>短いほうに含まれる橋には、封鎖時の増加量を加える。</li>
+            <li>範囲加算は差分配列で行う。端をまたぐ範囲は2区間に分ける。</li>
+            <li>累積和で橋ごとの増加量を求め、<code>基準距離 + 増加量</code> の最小値を出す。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          島 <code>left</code> から <code>right</code> へ番号が増える向きに進むと、
+          通る橋は <code>left</code> から <code>right - 1</code>。
+          反対側の道は端をまたぐので、<code>1..left-1</code> と <code>right..N</code> に分けて更新する。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>def add_range(diff, left, right, value):
+    if left > right:
+        return
+    diff[left] += value
+    diff[right + 1] -= value
+
+
+N, M = map(int, input().split())
+X = list(map(int, input().split()))
+
+base_distance = 0
+diff = [0] * (N + 2)
+
+for i in range(M - 1):
+    a = X[i]
+    b = X[i + 1]
+    left = min(a, b)
+    right = max(a, b)
+
+    direct = right - left
+    reverse = N - direct
+
+    if direct <= reverse:
+        short = direct
+        long = reverse
+        add_range(diff, left, right - 1, long - short)
+    else:
+        short = reverse
+        long = direct
+        add_range(diff, 1, left - 1, long - short)
+        add_range(diff, right, N, long - short)
+
+    base_distance += short
+
+answer = 10**30
+current_add = 0
+for bridge in range(1, N + 1):
+    current_add += diff[bridge]
+    answer = min(answer, base_distance + current_add)
+
+print(answer)</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>まとめ</h2>
+        <p>
+          すべての橋を封鎖してツアーを作り直すのではなく、短い道を基準にして増加量だけを見る。
+          「どの橋に同じ値を足すか」は区間になるため、差分配列で高速に処理できる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

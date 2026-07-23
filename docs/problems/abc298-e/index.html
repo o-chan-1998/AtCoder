@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC298 E - Unfair Sugoroku | AtCoder Study Notes</title>
+    <meta name="description" content="ABC298 E - Unfair Sugoroku の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC298 E - Unfair Sugoroku</h1>
+          <p class="lead">
+            現在位置と手番を状態にして、各出目の先の勝率を平均するDPとして考える。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            高橋君と青木君が交互にサイコロを振り、先に地点 <code>N</code> に到着した方が勝つ。
+            高橋君が先手のとき、高橋君が勝つ確率を求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc298/tasks/abc298_e">AtCoder ABC298 E - Unfair Sugoroku</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          ある時点から先の勝率を決めるために必要なのは、高橋君の位置、青木君の位置、今どちらの手番かである。
+          過去の出目は、現在位置が同じなら今後の勝率に影響しない。
+        </p>
+        <p>
+          そこで、次の2種類のDPを用意する。
+        </p>
+        <pre><code>T[i][j]: 高橋君が i、青木君が j にいて、高橋君の手番のときの勝率
+A[i][j]: 高橋君が i、青木君が j にいて、青木君の手番のときの勝率</code></pre>
+        <p>
+          高橋君の手番では、各出目の先で高橋君がゴールすれば勝率は1。
+          ゴールしなければ次は青木君の手番なので <code>A[next_i][j]</code> を見る。
+          青木君の手番では、青木君がゴールした分岐の勝率は0で、そうでなければ <code>T[i][next_j]</code> を見る。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          位置は増えるだけなので、ゴールに近い状態から逆順に埋める。
+          確率の平均は、個数で割る代わりに <code>pow(P, MOD - 2, MOD)</code> と
+          <code>pow(Q, MOD - 2, MOD)</code> を掛けて計算する。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>MOD = 998244353
+
+
+def solve():
+    n, start_t, start_a, p, q = map(int, input().split())
+
+    inv_p = pow(p, MOD - 2, MOD)
+    inv_q = pow(q, MOD - 2, MOD)
+
+    turn_t = [[0] * (n + 1) for _ in range(n + 1)]
+    turn_a = [[0] * (n + 1) for _ in range(n + 1)]
+
+    for t in range(n - 1, 0, -1):
+        for a in range(n - 1, 0, -1):
+            total = 0
+            for dice in range(1, p + 1):
+                next_t = t + dice
+                if next_t &gt;= n:
+                    total += 1
+                else:
+                    total += turn_a[next_t][a]
+                total %= MOD
+            turn_t[t][a] = total * inv_p % MOD
+
+            total = 0
+            for dice in range(1, q + 1):
+                next_a = a + dice
+                if next_a &lt; n:
+                    total += turn_t[t][next_a]
+                total %= MOD
+            turn_a[t][a] = total * inv_q % MOD
+
+    print(turn_t[start_t][start_a])
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          高橋君の手番と青木君の手番では、動く人も終了時の勝率も違う。
+          1つの表にまとめようとせず、手番ごとに2つの表を分けると遷移が読みやすい。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          現在位置と手番を状態にし、各サイコロの出目の先の勝率を平均する。
+          初期状態は高橋君の手番なので、答えは <code>T[A][B]</code> になる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
