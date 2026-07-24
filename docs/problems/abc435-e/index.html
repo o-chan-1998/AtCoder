@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC435 E - Cover query | AtCoder Study Notes</title>
+    <meta name="description" content="ABC435 E - Cover query の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC435 E - Cover query</h1>
+          <p class="lead">
+            塗る操作を1マスずつ実行せず、クエリ境界で分けた区間の長さとして管理する。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            長さ <code>N</code> の白いマス列に対して、区間を黒く塗るクエリを処理する。
+            一度黒くなったマスは戻らないので、各時点で白いマスが何個残るかを答える。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc435/tasks/abc435_e">AtCoder ABC435 E - Cover query</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          白いマス数を知るには、これまで黒く塗られたマス数が分かればよい。
+          ただし <code>N</code> が大きいため、マスごとの配列は使えない。
+        </p>
+        <p>
+          クエリは区間単位なので、境界だけに注目する。
+          すべての <code>L</code> と <code>R + 1</code> を集めて座標圧縮すると、
+          圧縮後の各区間はまとめて黒か白かを管理できる。
+        </p>
+        <pre><code>元の区間: [L, R]
+半開区間: [L, R + 1)
+
+圧縮後の葉には
+coords[i + 1] - coords[i]
+個のマスが入る</code></pre>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          同じ区間を何度塗っても、黒い長さは増えない。
+          遅延セグメント木で「この範囲は全部黒」を代入する形にすると、重複して塗った部分を自然に無視できる。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+from bisect import bisect_left
+
+
+class LazySegTree:
+    def __init__(self, lengths):
+        self.n = 1
+        while self.n < len(lengths):
+            self.n *= 2
+        self.black = [0] * (2 * self.n)
+        self.total = [0] * (2 * self.n)
+        self.lazy = [False] * (2 * self.n)
+
+        for i, length in enumerate(lengths):
+            self.total[self.n + i] = length
+        for i in range(self.n - 1, 0, -1):
+            self.total[i] = self.total[i * 2] + self.total[i * 2 + 1]
+
+    def apply_black(self, node):
+        self.black[node] = self.total[node]
+        self.lazy[node] = True
+
+    def push(self, node):
+        if not self.lazy[node] or node >= self.n:
+            self.lazy[node] = False
+            return
+        self.apply_black(node * 2)
+        self.apply_black(node * 2 + 1)
+        self.lazy[node] = False
+
+    def update(self, left, right, node=1, node_left=0, node_right=None):
+        if node_right is None:
+            node_right = self.n
+        if right <= node_left or node_right <= left:
+            return
+        if left <= node_left and node_right <= right:
+            self.apply_black(node)
+            return
+
+        self.push(node)
+        mid = (node_left + node_right) // 2
+        self.update(left, right, node * 2, node_left, mid)
+        self.update(left, right, node * 2 + 1, mid, node_right)
+        self.black[node] = self.black[node * 2] + self.black[node * 2 + 1]
+
+
+def solve():
+    input = sys.stdin.readline
+    n, q = map(int, input().split())
+    queries = [tuple(map(int, input().split())) for _ in range(q)]
+
+    coords = {1, n + 1}
+    for left, right in queries:
+        coords.add(left)
+        coords.add(right + 1)
+    coords = sorted(coords)
+
+    lengths = [coords[i + 1] - coords[i] for i in range(len(coords) - 1)]
+    tree = LazySegTree(lengths)
+
+    answers = []
+    for left, right in queries:
+        l = bisect_left(coords, left)
+        r = bisect_left(coords, right + 1)
+        tree.update(l, r)
+        answers.append(str(n - tree.black[1]))
+
+    print("\n".join(answers))
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          区間を閉区間のまま扱うと、長さや境界の処理でずれやすい。
+          <code>[L, R + 1)</code> に直してから圧縮すると、長さを差で扱える。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          必要なのは個々の色ではなく、黒くなった総マス数である。
+          クエリの境界で座標圧縮し、範囲を黒にする更新を重ねれば、各回の白いマス数を効率よく求められる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

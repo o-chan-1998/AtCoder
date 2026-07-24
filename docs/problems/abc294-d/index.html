@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC294 D - Bank | AtCoder Study Notes</title>
+    <meta name="description" content="ABC294 D - Bank の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC294 D - Bank</h1>
+          <p class="lead">
+            「呼ばれたが、まだ受付に行っていない人」のうち最小番号を、イベントごとに管理する。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            銀行で、まだ呼ばれていない人を順に呼ぶイベント、呼ばれた人が受付へ行くイベント、
+            まだ受付へ行っていない人のうち最小番号を出力するイベントを処理する。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc294/tasks/abc294_d">AtCoder ABC294 D - Bank</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          出力で必要なのは、呼ばれた人全員ではなく
+          <code>呼ばれたが、まだ受付に行っていない人</code> の最小番号である。
+          イベント1で呼ばれる番号は必ず <code>1, 2, 3, ...</code> の順なので、
+          次に呼ぶ番号を1つ持てばよい。
+        </p>
+        <p>
+          受付へ行った人は二度と候補にならない。
+          そのため、<code>done[x]</code> で受付済みかを持ち、答え候補のポインタを
+          受付済みでないところまで進めれば、イベント3に答えられる。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li><code>next_person</code> を、次にイベント1で呼ぶ番号として持つ。</li>
+            <li><code>done[x]</code> を、人 <code>x</code> が受付へ行ったかとして持つ。</li>
+            <li>イベント1では <code>next_person</code> を1つ進める。</li>
+            <li>イベント2では <code>done[x] = True</code> にする。</li>
+            <li>イベント3では、最小候補が受付済みなら進め、止まった番号を出力する。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          <code>set</code> の <code>min</code> を毎回使うと、集合の大きさに比例して重くなる。
+          番号は小さい順にしか呼ばれないので、答え候補を指すポインタで十分である。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+
+
+def solve():
+    input = sys.stdin.readline
+    n, q = map(int, input().split())
+
+    next_person = 1
+    answer_candidate = 1
+    done = [False] * (n + 2)
+    called_until = 0
+    answers = []
+
+    for _ in range(q):
+        event = list(map(int, input().split()))
+
+        if event[0] == 1:
+            called_until = next_person
+            next_person += 1
+        elif event[0] == 2:
+            x = event[1]
+            done[x] = True
+        else:
+            while done[answer_candidate]:
+                answer_candidate += 1
+            answers.append(str(answer_candidate))
+
+    print("\n".join(answers))
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          イベント3は、再度呼ぶだけで受付済みにはしない。
+          そのため、同じ人がイベント3で複数回出力されることがある。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          出力候補を「呼ばれたが未受付の人」に絞り、受付済みフラグと最小候補ポインタで管理する。
+          番号が順にしか呼ばれない性質を使うと、複雑なデータ構造なしで処理できる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

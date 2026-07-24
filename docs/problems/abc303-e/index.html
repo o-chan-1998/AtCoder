@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC303 E - A Gift From the Stars | AtCoder Study Notes</title>
+    <meta name="description" content="ABC303 E - A Gift From the Stars の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC303 E - A Gift From the Stars</h1>
+          <p class="lead">
+            完成した木を逆から見て、葉の隣にある星の中心を取り出していく。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            いくつかの星型グラフを、外側の頂点どうしに辺を張って1本の木にした。
+            完成後の木から、最初にあった星のレベルをすべて復元する。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc303/tasks/abc303_e">AtCoder ABC303 E - A Gift From the Stars</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          星どうしをつなぐ操作では、次数1の外側の頂点だけが選ばれる。
+          星の中心は選ばれないので、中心の次数は最初の星のレベルのまま残る。
+        </p>
+        <p>
+          木の葉を見ると、その葉はどれかの星の外側の頂点である。
+          したがって、葉の隣はその星の中心であり、その次数が復元すべきレベルになる。
+          中心とその隣接頂点を取り除くと、隣の星の外側が新しい葉になる。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>各頂点の最初の次数を保存する。</li>
+            <li>現在の次数が1の頂点をキューに入れる。</li>
+            <li>葉を取り出し、まだ残っている隣接頂点を中心とする。</li>
+            <li>中心の最初の次数を答えに追加する。</li>
+            <li>中心とその隣接頂点を削除し、新しく葉になった頂点をキューに入れる。</li>
+            <li>最後にレベルを昇順に並べて出力する。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          削除済みの頂点をキューから取り出すことがあるので、その場合は無視する。
+          レベルとして使うのは、削除後の次数ではなく、入力された木での最初の次数である。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+from collections import deque
+
+
+def solve():
+    input = sys.stdin.readline
+    n = int(input())
+    graph = [[] for _ in range(n)]
+
+    for _ in range(n - 1):
+        u, v = map(int, input().split())
+        u -= 1
+        v -= 1
+        graph[u].append(v)
+        graph[v].append(u)
+
+    original_degree = [len(graph[v]) for v in range(n)]
+    current_degree = original_degree[:]
+    removed = [False] * n
+
+    queue = deque(v for v in range(n) if current_degree[v] == 1)
+    levels = []
+
+    while queue:
+        leaf = queue.popleft()
+        if removed[leaf]:
+            continue
+
+        center = -1
+        for to in graph[leaf]:
+            if not removed[to]:
+                center = to
+                break
+
+        if center == -1:
+            continue
+
+        levels.append(original_degree[center])
+        erase = [center] + graph[center]
+
+        for v in erase:
+            if removed[v]:
+                continue
+            removed[v] = True
+            for to in graph[v]:
+                if removed[to]:
+                    continue
+                current_degree[to] -= 1
+                if current_degree[to] == 1:
+                    queue.append(to)
+
+    levels.sort()
+    print(*levels)
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          「葉の次数」ではなく「葉の隣の次数」を見る。
+          葉は星の外側であり、レベルを持っているのは中心である。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          生成操作を逆向きに見ると、端の星を葉から見つけて取り外す処理になる。
+          中心の最初の次数を集めることで、元の星のレベルを復元できる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

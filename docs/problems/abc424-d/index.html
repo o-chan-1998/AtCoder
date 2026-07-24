@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC424 D - 2x2 Erasing 2 | AtCoder Study Notes</title>
+    <meta name="description" content="ABC424 D - 2x2 Erasing 2 の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC424 D - 2x2 Erasing 2</h1>
+          <p class="lead">
+            黒を消す問題を、条件を満たしながら黒を最大いくつ残せるかという行状態DPに言い換える。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            黒いマスをいくつか白へ塗り替えて、黒だけでできた <code>2 x 2</code> が存在しない状態にする。
+            必要な塗り替え数の最小値を、複数テストケースについて求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc424/tasks/abc424_d">AtCoder ABC424 D - 2x2 Erasing 2</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          黒を白にするだけなので、最終的に残る黒は、最初の黒の部分集合である。
+          したがって「消す数を最小にする」は「残せる黒の数を最大にする」と同じである。
+        </p>
+        <p>
+          黒だけの <code>2 x 2</code> は、隣り合う2行の間にだけ発生する。
+          そこで、1行ごとに「どの列の黒を残すか」をビット列で表し、
+          直前の行状態と今の行状態が両立するかを見ながらDPする。
+        </p>
+        <pre><code>上の行: 110
+下の行: 111
+
+左2列が
+##
+##
+になるので、この組み合わせは使えない</code></pre>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          幅は最大7なので、1行の状態は高々 <code>2^7</code> 通りである。
+          各行では、元から白いマスを黒として残す状態を除外する。
+          最後に <code>元の黒の総数 - 残せる黒の最大数</code> を答える。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+
+
+def compatible(upper, lower, width):
+    for col in range(width - 1):
+        mask = 3 << col
+        if (upper &amp; mask) == mask and (lower &amp; mask) == mask:
+            return False
+    return True
+
+
+def solve_case(h, w, grid):
+    row_masks = []
+    total_black = 0
+
+    for row in grid:
+        mask = 0
+        for col, ch in enumerate(row):
+            if ch == "#":
+                mask |= 1 << col
+        row_masks.append(mask)
+        total_black += mask.bit_count()
+
+    state_count = 1 << w
+    minus_inf = -10**18
+    dp = [minus_inf] * state_count
+
+    for state in range(state_count):
+        if state | row_masks[0] == row_masks[0]:
+            dp[state] = state.bit_count()
+
+    for row in range(1, h):
+        next_dp = [minus_inf] * state_count
+        for cur in range(state_count):
+            if cur | row_masks[row] != row_masks[row]:
+                continue
+            add = cur.bit_count()
+            for prev in range(state_count):
+                if dp[prev] == minus_inf:
+                    continue
+                if compatible(prev, cur, w):
+                    next_dp[cur] = max(next_dp[cur], dp[prev] + add)
+        dp = next_dp
+
+    return total_black - max(dp)
+
+
+def solve():
+    input = sys.stdin.readline
+    t = int(input())
+    answers = []
+
+    for _ in range(t):
+        h, w = map(int, input().split())
+        grid = [input().strip() for _ in range(h)]
+        answers.append(str(solve_case(h, w, grid)))
+
+    print("\n".join(answers))
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          DPで最大化しているのは、消す黒の数ではなく残す黒の数である。
+          問題で求める値へ戻すため、最後に元の黒の総数から引く。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          <code>2 x 2</code> の制約は隣接2行だけで判定できる。
+          行状態をビットで持ち、両立する状態だけをつなげば、全体で残せる黒の最大数を求められる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

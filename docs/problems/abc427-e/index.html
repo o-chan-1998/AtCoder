@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC427 E - Wind Cleaning | AtCoder Study Notes</title>
+    <meta name="description" content="ABC427 E - Wind Cleaning の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC427 E - Wind Cleaning</h1>
+          <p class="lead">
+            現在残っているゴミ配置を状態にして、安全な上下左右の同時移動だけを BFS でたどる。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            グリッド上に高橋君と複数のゴミがある。
+            1回の操作では、すべてのゴミを上下左右の同じ方向へ1マス動かす。
+            ゴミが外へ出れば消え、高橋君のマスへ入る操作は使えない。
+            高橋君を汚さずにすべてのゴミを消す最小操作回数を求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc427/tasks/abc427_e">AtCoder ABC427 E - Wind Cleaning</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          操作回数を最小にしたいので、各操作のコストが1であることから BFS を使う。
+          状態として持つべきものは、現在グリッド上に残っているゴミの配置である。
+        </p>
+        <p>
+          ゴミはすべて同時に動く。外へ出たゴミは消え、以後戻らない。
+          そのため、単に「全体がどれだけ平行移動したか」ではなく、
+          どのゴミが残っているかまで含めた配置を状態にする必要がある。
+        </p>
+        <pre><code>1つの状態から試す操作:
+上 / 下 / 左 / 右
+
+移動先が外      -> そのゴミは消える
+移動先が T のマス -> その操作は使えない
+それ以外        -> 次のゴミ配置に入れる</code></pre>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          <code>H, W <= 12</code> なので、マス数は最大144である。
+          各マスに番号を振り、ゴミ配置を整数のビット列として表すと、訪問済み集合で扱いやすい。
+          新しい状態が <code>0</code> になったら、すべてのゴミを消せたことになる。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+from collections import deque
+
+
+def cell_id(row, col, width):
+    return row * width + col
+
+
+def move_state(state, h, w, taka_row, taka_col, dr, dc):
+    next_state = 0
+
+    for pos in range(h * w):
+        if ((state >> pos) &amp; 1) == 0:
+            continue
+
+        row = pos // w
+        col = pos % w
+        nr = row + dr
+        nc = col + dc
+
+        if nr < 0 or nr >= h or nc < 0 or nc >= w:
+            continue
+        if nr == taka_row and nc == taka_col:
+            return None
+
+        next_state |= 1 << cell_id(nr, nc, w)
+
+    return next_state
+
+
+def solve():
+    input = sys.stdin.readline
+    h, w = map(int, input().split())
+    grid = [input().strip() for _ in range(h)]
+
+    start = 0
+    taka_row = -1
+    taka_col = -1
+
+    for row in range(h):
+        for col in range(w):
+            if grid[row][col] == "#":
+                start |= 1 << cell_id(row, col, w)
+            elif grid[row][col] == "T":
+                taka_row = row
+                taka_col = col
+
+    queue = deque([(start, 0)])
+    visited = {start}
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    while queue:
+        state, dist = queue.popleft()
+
+        for dr, dc in directions:
+            next_state = move_state(state, h, w, taka_row, taka_col, dr, dc)
+            if next_state is None:
+                continue
+            if next_state == 0:
+                print(dist + 1)
+                return
+            if next_state in visited:
+                continue
+
+            visited.add(next_state)
+            queue.append((next_state, dist + 1))
+
+    print(-1)
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          ゴミは1個ずつ順に動くのではなく、同時に移動する。
+          あるゴミが外へ出て消えた場合も、別のゴミが高橋君のマスへ入るなら、その操作全体は使えない。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          現在のゴミ配置を状態にして、4方向の安全な遷移だけを BFS で調べる。
+          初めて空配置に到達した距離が最小操作回数で、到達できなければ <code>-1</code> である。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
