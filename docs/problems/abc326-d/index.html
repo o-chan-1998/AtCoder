@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC326 D - ABC Puzzle | AtCoder Study Notes</title>
+    <meta name="description" content="ABC326 D - ABC Puzzle の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC326 D - ABC Puzzle</h1>
+          <p class="lead">
+            行として正しい候補を先に作り、上から選びながら列条件を満たす盤面を探す。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            <code>N x N</code> の盤面に <code>A</code>, <code>B</code>, <code>C</code> を配置する。
+            各行・各列には3文字が1個ずつ入り、各行の左から最初の文字と各列の上から最初の文字が指定された文字列と一致する必要がある。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc326/tasks/abc326_d">AtCoder ABC326 D - ABC Puzzle</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          <code>N</code> は最大でも <code>5</code> なので、候補を試す方針が使える。
+          ただし盤面全体をマスごとに作るより、まず「1行として正しい文字列」を作ると整理しやすい。
+        </p>
+        <p>
+          1行の候補は、長さ <code>N</code> の文字列で、
+          <code>A</code>, <code>B</code>, <code>C</code> がちょうど1個ずつ入り、
+          左から最初に見える文字がその行に指定された文字と一致するものだけである。
+        </p>
+        <p>
+          各行から候補を1つずつ選べば、行条件は満たせる。
+          残る列条件は、行を置くたびに「同じ列に同じ文字が2回入らないか」「その列で初めて見える文字が指定と合うか」を確認して枝刈りする。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>各行について、行条件を満たす候補文字列を列挙する。</li>
+            <li>上の行から順に、候補を1つ選んで盤面へ置く。</li>
+            <li>置いた文字が、列ごとの個数や最初に見える文字の条件に矛盾しないか確認する。</li>
+            <li>全行を置けたら、各列に <code>A</code>, <code>B</code>, <code>C</code> が1個ずつあるか最終確認する。</li>
+            <li>見つかれば <code>Yes</code> と盤面を出力し、見つからなければ <code>No</code> を出力する。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          列の上端文字は、ある列に初めて <code>A</code>, <code>B</code>, <code>C</code> のいずれかを置く瞬間に決まる。
+          その文字が指定と違うなら、その候補はそこで捨てられる。
+        </p>
+        <p>
+          バックトラックでは、行を置いたときに変更した列の個数と上端文字を戻す必要がある。
+          実装を単純にするため、置く前の状態をコピーして再帰する形でも十分間に合う。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+
+
+def first_visible(line):
+    for char in line:
+        if char != ".":
+            return char
+    return ""
+
+
+def make_row_candidates(n, expected):
+    candidates = []
+
+    for a_pos in range(n):
+        for b_pos in range(n):
+            if b_pos == a_pos:
+                continue
+            for c_pos in range(n):
+                if c_pos == a_pos or c_pos == b_pos:
+                    continue
+
+                row = ["."] * n
+                row[a_pos] = "A"
+                row[b_pos] = "B"
+                row[c_pos] = "C"
+
+                if first_visible(row) == expected:
+                    candidates.append("".join(row))
+
+    return candidates
+
+
+def solve():
+    input = sys.stdin.readline
+    n = int(input())
+    r = input().strip()
+    c = input().strip()
+
+    row_candidates = [make_row_candidates(n, r[i]) for i in range(n)]
+    board = []
+    column_counts = [{"A": 0, "B": 0, "C": 0} for _ in range(n)]
+    column_first = [""] * n
+
+    def can_place(row):
+        for col, char in enumerate(row):
+            if char == ".":
+                continue
+            if column_counts[col][char] == 1:
+                return False
+            if column_first[col] == "" and char != c[col]:
+                return False
+        return True
+
+    def place(row):
+        changed_first = []
+        for col, char in enumerate(row):
+            if char == ".":
+                continue
+            column_counts[col][char] += 1
+            if column_first[col] == "":
+                column_first[col] = char
+                changed_first.append(col)
+        return changed_first
+
+    def remove(row, changed_first):
+        for col, char in enumerate(row):
+            if char != ".":
+                column_counts[col][char] -= 1
+        for col in changed_first:
+            column_first[col] = ""
+
+    def search(row_index):
+        if row_index == n:
+            for col in range(n):
+                if column_counts[col]["A"] != 1:
+                    return False
+                if column_counts[col]["B"] != 1:
+                    return False
+                if column_counts[col]["C"] != 1:
+                    return False
+                if column_first[col] != c[col]:
+                    return False
+            return True
+
+        for row in row_candidates[row_index]:
+            if not can_place(row):
+                continue
+            board.append(row)
+            changed_first = place(row)
+            if search(row_index + 1):
+                return True
+            remove(row, changed_first)
+            board.pop()
+
+        return False
+
+    if not search(0):
+        print("No")
+        return
+
+    print("Yes")
+    print("\n".join(board))
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          行条件だけで候補を作ると、列条件を満たさない盤面も多く残る。
+          行を置く途中で列の重複と上端文字を確認して、早めに枝を切ることが大切である。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          小さい制約を利用して、行候補の列挙とバックトラックで構成する。
+          条件を行と列に分けると、盤面全体を直接試すより見通しよく実装できる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

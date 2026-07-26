@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC288 E - Wish List | AtCoder Study Notes</title>
+    <meta name="description" content="ABC288 E - Wish List の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC288 E - Wish List</h1>
+          <p class="lead">
+            商品を番号順に見て、ここまでに買った個数を状態にする。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            欲しい商品をすべて買うまでに必要な最小費用を求める。
+            欲しくない商品も買うことができ、何を先に買ったかによって上乗せ費用が変わる。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc288/tasks/abc288_e">AtCoder ABC288 E - Wish List</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          欲しい商品だけを買えばよいとは限らない。
+          欲しくない商品を先に買うことで、後の商品が売れ残りの中で何番目になるかが変わり、上乗せ費用を下げられる場合がある。
+        </p>
+        <p>
+          購入順をそのまま考えると複雑になるので、商品を番号順に見て
+          <code>買うか、買わないか</code> を決める問題として整理する。
+          商品 <code>i</code> を買うときに重要なのは、商品 <code>i</code> より前で何個買うことにしたかである。
+        </p>
+        <p>
+          前で <code>j</code> 個買っているなら、商品 <code>i</code> に使える上乗せ費用は
+          <code>C[i-j]</code> から <code>C[i]</code> までのどれかになる。
+          最小費用を求めたいので、この範囲の最小値を前計算しておく。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li><code>cost[i][j]</code> を、商品 <code>i</code> より前で <code>j</code> 個買ったときの使える上乗せ費用の最小値として作る。</li>
+            <li><code>dp[i][j]</code> を、商品 <code>i</code> まで見て <code>j</code> 個買ったときの最小費用とする。</li>
+            <li>欲しい商品は必ず買う。</li>
+            <li>欲しくない商品は、買わない遷移と買う遷移の両方を試す。</li>
+            <li>最後に <code>dp[N][j]</code> の最小値を答える。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          <code>N</code> は最大 <code>5000</code> なので、<code>O(N^2)</code> のDPが使える。
+          <code>cost[i][j]</code> も、商品 <code>i</code> ごとに範囲の最小値を伸ばしながら作れば
+          <code>O(N^2)</code> で前計算できる。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+
+
+INF = 10**30
+
+
+def solve():
+    input = sys.stdin.readline
+    n, m = map(int, input().split())
+    a = [0] + list(map(int, input().split()))
+    c = [0] + list(map(int, input().split()))
+    wanted = set(map(int, input().split()))
+
+    cost = [[INF] * (n + 1) for _ in range(n + 1)]
+    for item in range(1, n + 1):
+        current_min = INF
+        for bought_before in range(item):
+            c_index = item - bought_before
+            current_min = min(current_min, c[c_index])
+            cost[item][bought_before] = current_min
+
+    dp = [[INF] * (n + 1) for _ in range(n + 1)]
+    dp[0][0] = 0
+
+    for item in range(1, n + 1):
+        for bought_count in range(item):
+            previous = dp[item - 1][bought_count]
+            if previous == INF:
+                continue
+
+            if item not in wanted:
+                dp[item][bought_count] = min(dp[item][bought_count], previous)
+
+            next_cost = previous + a[item] + cost[item][bought_count]
+            dp[item][bought_count + 1] = min(dp[item][bought_count + 1], next_cost)
+
+    print(min(dp[n]))
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          購入順そのものを状態にすると大きすぎる。
+          番号順に見たとき、上乗せ費用に影響する情報は「前で何個買ったか」に圧縮できる。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          欲しくない商品を買う選択も含めて、商品ごとに買うかどうかをDPする。
+          購入順の自由度は上乗せ費用の最小値として前計算し、状態数を <code>O(N^2)</code> に抑える。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

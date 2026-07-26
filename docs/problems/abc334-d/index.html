@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC334 D - Reindeer and Sleigh | AtCoder Study Notes</title>
+    <meta name="description" content="ABC334 D - Reindeer and Sleigh の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC334 D - Reindeer and Sleigh</h1>
+          <p class="lead">
+            小さい必要数から選んだ累積和を作り、各クエリは二分探索で答える。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            各ソリを引くために必要なトナカイ数が与えられる。
+            各クエリでは、トナカイが <code>X</code> 匹いるとき、最大で何台のソリを引けるかを求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc334/tasks/abc334_d">AtCoder ABC334 D - Reindeer and Sleigh</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          出力するのはソリの番号ではなく台数である。
+          そのため、何台引けるかだけを考えるなら、必要なトナカイ数が少ないソリから選ぶのが最適になる。
+        </p>
+        <p>
+          必要数を昇順に並べ、累積和を作る。
+          累積和の <code>k</code> 番目は、「<code>k</code> 台引くために必要な最小トナカイ数」を表す。
+        </p>
+        <p>
+          クエリ <code>X</code> に対しては、累積和の中で <code>X</code> 以下の値がいくつあるかを数えればよい。
+          累積和は昇順なので、二分探索で高速に求められる。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>必要なトナカイ数の配列を昇順にソートする。</li>
+            <li>先頭からの累積和を作る。</li>
+            <li>各クエリ <code>X</code> について、累積和の中で <code>X</code> 以下の個数を二分探索で求める。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          累積和は大きくなるため、言語によっては整数型の範囲に注意する。
+          Python ではそのまま整数で扱える。
+          <code>bisect_right(prefix, x)</code> は、<code>x</code> 以下の要素数を返す。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+from bisect import bisect_right
+
+
+def solve():
+    input = sys.stdin.readline
+    n, q = map(int, input().split())
+    r = list(map(int, input().split()))
+
+    r.sort()
+
+    prefix = []
+    total = 0
+    for value in r:
+        total += value
+        prefix.append(total)
+
+    answers = []
+    for _ in range(q):
+        x = int(input())
+        answers.append(str(bisect_right(prefix, x)))
+
+    print("\n".join(answers))
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          各クエリで毎回ソリを選び直して線形に数えると間に合わない。
+          事前に「台数ごとの最小必要数」を累積和として作っておくと、各クエリは二分探索だけになる。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          最大台数を直接考えるのではなく、<code>k</code> 台引くための最小必要数に変換する。
+          ソート済みの累積和を使えば、各クエリを高速に処理できる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

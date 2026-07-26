@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC339 E - Smooth Subsequence | AtCoder Study Notes</title>
+    <meta name="description" content="ABC339 E - Smooth Subsequence の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC339 E - Smooth Subsequence</h1>
+          <p class="lead">
+            最後の値ごとの最大長を持ち、値の範囲最大をセグメント木で求める。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            数列から部分列を選び、隣り合う要素の差の絶対値がすべて <code>D</code> 以下になるようにする。
+            そのような部分列の最大長を求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc339/tasks/abc339_e">AtCoder ABC339 E - Smooth Subsequence</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          部分列なので、元の順序を守る必要がある。
+          そのため、数列を左から順に処理する。
+        </p>
+        <p>
+          条件は隣り合う2項だけを見るものなので、今の値を末尾に追加するときは、直前の値だけが重要である。
+          <code>dp[x]</code> を「最後の値が <code>x</code> である部分列の最大長」とする。
+        </p>
+        <p>
+          今の値を <code>a</code> とすると、直前の値 <code>x</code> は
+          <code>a - D &lt;= x &lt;= a + D</code> を満たす必要がある。
+          つまり、<code>dp</code> のこの範囲の最大値に1を足せば、<code>a</code> を最後にする最大長が分かる。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li><code>dp[x]</code> を、最後の値が <code>x</code> の部分列の最大長とする。</li>
+            <li><code>A</code> を左から順に見る。</li>
+            <li>今の値 <code>a</code> について、<code>[a-D, a+D]</code> の範囲最大を求める。</li>
+            <li>その値に1を足して、<code>dp[a]</code> を更新する。</li>
+            <li>範囲最大と一点更新を高速に行うため、セグメント木を使う。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          <code>A_i</code> の最大値は決まっているので、値そのものを添字にできる。
+          範囲 <code>a-D</code> や <code>a+D</code> は、配列の範囲からはみ出さないように丸める。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+
+
+class SegmentTree:
+    def __init__(self, n):
+        self.size = 1
+        while self.size &lt; n:
+            self.size *= 2
+        self.data = [0] * (self.size * 2)
+
+    def query(self, left, right):
+        left += self.size
+        right += self.size
+        result = 0
+
+        while left &lt; right:
+            if left % 2 == 1:
+                result = max(result, self.data[left])
+                left += 1
+            if right % 2 == 1:
+                right -= 1
+                result = max(result, self.data[right])
+            left //= 2
+            right //= 2
+
+        return result
+
+    def update(self, index, value):
+        pos = index + self.size
+        if self.data[pos] &gt;= value:
+            return
+        self.data[pos] = value
+        pos //= 2
+
+        while pos:
+            self.data[pos] = max(self.data[pos * 2], self.data[pos * 2 + 1])
+            pos //= 2
+
+
+def solve():
+    input = sys.stdin.readline
+    n, d = map(int, input().split())
+    a_list = list(map(int, input().split()))
+
+    max_value = 500000
+    seg = SegmentTree(max_value + 1)
+
+    for a in a_list:
+        left = max(1, a - d)
+        right = min(max_value, a + d)
+        best = seg.query(left, right + 1)
+        seg.update(a, best + 1)
+
+    print(seg.query(1, max_value + 1))
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          同じ最後の値なら、短い部分列を残す必要はない。
+          今後追加できる値は同じなので、最大長だけを残せば十分である。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          左から処理し、最後の値ごとの最大長を管理する。
+          絶対値条件は値の範囲最大に変換できるため、セグメント木で効率よく更新できる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC348 D - Medicines on Grid | AtCoder Study Notes</title>
+    <meta name="description" content="ABC348 D - Medicines on Grid の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC348 D - Medicines on Grid</h1>
+          <p class="lead">
+            各マスに到達できる最大残りエネルギーを更新しながら、到達範囲を広げる。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            グリッド上で、エネルギーを消費しながらスタートからゴールへ移動できるかを判定する。
+            薬のあるマスでは、残りエネルギーをその薬の値にできる。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc348/tasks/abc348_d">AtCoder ABC348 D - Medicines on Grid</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          同じマスに到達する場合でも、残りエネルギーが多い状態のほうが強い。
+          そのため、各マスについて
+          <code>そのマスに到達できた最大残りエネルギー</code> だけを持てばよい。
+        </p>
+        <p>
+          現在のエネルギーが <code>0</code> なら移動できない。
+          エネルギーが正なら、上下左右の通れるマスへ進み、移動後のエネルギーは1減る。
+          移動先に薬がある場合は、現在の残りと薬の値の大きいほうを採用する。
+        </p>
+        <p>
+          移動先で得られるエネルギーが、これまで記録した値より大きいときだけ更新する。
+          それ以外は、以前より弱い状態なので、そこから探索しても新しい到達先は増えない。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>薬の位置とエネルギーを辞書に入れる。</li>
+            <li>スタート地点に薬がなければ、初期エネルギーが0なので <code>No</code>。</li>
+            <li><code>best[r][c]</code> を、そのマスに到達できた最大残りエネルギーとして持つ。</li>
+            <li>キューで到達可能な状態を広げる。</li>
+            <li>ゴールに到達できたら <code>Yes</code>、探索が尽きたら <code>No</code>。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          薬は必ず使う必要があるわけではない。
+          薬の値が現在の残りエネルギーより小さいなら、使わないほうがよい。
+          実装では <code>max(移動後のエネルギー, 薬の値)</code> として扱う。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+from collections import deque
+
+
+def solve():
+    input = sys.stdin.readline
+    h, w = map(int, input().split())
+    grid = [input().strip() for _ in range(h)]
+
+    start = goal = None
+    for r in range(h):
+        for c in range(w):
+            if grid[r][c] == "S":
+                start = (r, c)
+            elif grid[r][c] == "T":
+                goal = (r, c)
+
+    n = int(input())
+    medicines = {}
+    for _ in range(n):
+        r, c, e = map(int, input().split())
+        medicines[(r - 1, c - 1)] = e
+
+    if start not in medicines:
+        print("No")
+        return
+
+    best = [[-1] * w for _ in range(h)]
+    sr, sc = start
+    best[sr][sc] = medicines[start]
+    queue = deque([(sr, sc, medicines[start])])
+    directions = ((1, 0), (-1, 0), (0, 1), (0, -1))
+
+    while queue:
+        r, c, energy = queue.popleft()
+
+        if energy &lt; best[r][c]:
+            continue
+        if (r, c) == goal:
+            print("Yes")
+            return
+        if energy == 0:
+            continue
+
+        for dr, dc in directions:
+            nr = r + dr
+            nc = c + dc
+            if nr &lt; 0 or nr &gt;= h or nc &lt; 0 or nc &gt;= w:
+                continue
+            if grid[nr][nc] == "#":
+                continue
+
+            next_energy = energy - 1
+            if (nr, nc) in medicines:
+                next_energy = max(next_energy, medicines[(nr, nc)])
+
+            if next_energy &gt; best[nr][nc]:
+                best[nr][nc] = next_energy
+                queue.append((nr, nc, next_energy))
+
+    print("No")
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          「薬のあるマスを頂点にしたグラフ」と見る解法もあるが、各マスの最大エネルギーを直接更新しても考えやすい。
+          同じマスへ弱い状態で来た場合は捨てる、という判断が重要である。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          到達できるかどうかだけでなく、どれだけエネルギーを残して到達できるかを管理する。
+          最大残りエネルギーを更新しながら探索すれば、ゴール可能性を判定できる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

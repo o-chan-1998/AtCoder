@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC337 E - Bad Juice | AtCoder Study Notes</title>
+    <meta name="description" content="ABC337 E - Bad Juice の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC337 E - Bad Juice</h1>
+          <p class="lead">
+            各ジュースに異なるビット列を割り当て、返ってきた結果から番号を復元する。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            腐ったジュースが1本だけある。
+            友人に飲ませる組み合わせを設計し、翌日の結果から腐ったジュースの番号を特定する。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc337/tasks/abc337_e">AtCoder ABC337 E - Bad Juice</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          友人が <code>M</code> 人いると、翌日に得られる結果は長さ <code>M</code> の
+          <code>0</code> / <code>1</code> 文字列である。
+          これは全部で <code>2^M</code> 通りある。
+        </p>
+        <p>
+          ジュースが <code>N</code> 本あるので、すべてを区別するには少なくとも
+          <code>2^M &gt;= N</code> が必要である。
+          したがって、この条件を満たす最小の <code>M</code> が必要な友人の数になる。
+        </p>
+        <p>
+          あとは、各ジュースに異なる長さ <code>M</code> のビット列を割り当てる。
+          ビット列の <code>1</code> の位置に対応する友人へ、そのジュースを飲ませる。
+          返ってきた文字列と同じビット列を持つジュースが、腐ったジュースである。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li><code>2^M &gt;= N</code> を満たす最小の <code>M</code> を求める。</li>
+            <li>ジュース番号 <code>1..N</code> に、<code>0..N-1</code> の <code>M</code> 桁二進数を割り当てる。</li>
+            <li>各友人には、その桁が <code>1</code> のジュースを飲ませる。</li>
+            <li>返ってきた結果文字列を二進数として読み、対応するジュース番号を答える。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          この問題はインタラクティブ問題なので、実際の提出では出力のたびに flush が必要である。
+          また、<code>0</code> から割り当てると、<code>N</code> が2の冪の場合でも <code>M</code> 桁に収まる。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+
+
+def solve():
+    n = int(input())
+
+    m = 0
+    while (1 &lt;&lt; m) &lt; n:
+        m += 1
+
+    print(m, flush=True)
+
+    patterns = [format(i, f"0{m}b") for i in range(n)]
+    for friend in range(m):
+        drinks = []
+        for juice in range(n):
+            if patterns[juice][friend] == "1":
+                drinks.append(juice + 1)
+        print(len(drinks), *drinks, flush=True)
+
+    s = input().strip()
+    answer = int(s, 2) + 1
+    print(answer, flush=True)
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          友人に何を飲ませるかを直接考えるより、
+          「腐っていたときに返ってくる結果」をジュースごとに先に決めると分かりやすい。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          結果文字列を識別子として使う問題である。
+          <code>M</code> 人で <code>2^M</code> 通りを区別できるので、最小の <code>M</code> を選び、各ジュースに固有のビット列を割り当てる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

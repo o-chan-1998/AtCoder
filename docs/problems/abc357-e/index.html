@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC357 E - Reachability in Functional Graph | AtCoder Study Notes</title>
+    <meta name="description" content="ABC357 E - Reachability in Functional Graph の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC357 E - Reachability in Functional Graph</h1>
+          <p class="lead">
+            サイクルを土台にして、外側の頂点の到達可能数を逆順に決める。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            各頂点から出る辺がちょうど1本の有向グラフで、
+            頂点 <code>u</code> から頂点 <code>v</code> へ到達できる組の個数を求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc357/tasks/abc357_e">AtCoder ABC357 E - Reachability in Functional Graph</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          求める答えは、各頂点から到達可能な頂点数の合計である。
+          出次数がすべて1なので、どの頂点から進んでも道は一本道になり、最終的には必ずサイクルへ入る。
+        </p>
+        <p>
+          サイクル上の頂点からは、そのサイクル上のすべての頂点へ到達できる。
+          長さ <code>k</code> のサイクルなら、サイクル上の各頂点の到達可能数は <code>k</code> である。
+        </p>
+        <p>
+          サイクル外の頂点 <code>u</code> は、出辺の先 <code>a[u]</code> へ進むしかない。
+          したがって、到達可能数は <code>dp[u] = dp[a[u]] + 1</code> で決まる。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>各頂点の入次数を数える。</li>
+            <li>入次数0の頂点をキューで取り除く。取り除かれずに残った頂点がサイクル上の頂点である。</li>
+            <li>各サイクルをたどり、サイクル上の <code>dp</code> をサイクル長にする。</li>
+            <li>取り除いた頂点を逆順に処理し、<code>dp[u] = dp[a[u]] + 1</code> で決める。</li>
+            <li>最後に <code>dp</code> の総和を答える。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          入次数0の除去で記録した順番は、外側からサイクルへ向かう順番である。
+          <code>dp</code> を求めるときは、出辺の先が先に決まっている必要があるので、この順番を逆に処理する。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+from collections import deque
+
+
+def solve():
+    input = sys.stdin.readline
+    n = int(input())
+    to = [0] + list(map(int, input().split()))
+
+    indegree = [0] * (n + 1)
+    for v in range(1, n + 1):
+        indegree[to[v]] += 1
+
+    queue = deque(v for v in range(1, n + 1) if indegree[v] == 0)
+    removed = []
+
+    while queue:
+        v = queue.popleft()
+        removed.append(v)
+        nxt = to[v]
+        indegree[nxt] -= 1
+        if indegree[nxt] == 0:
+            queue.append(nxt)
+
+    dp = [0] * (n + 1)
+    seen_cycle = [False] * (n + 1)
+
+    for v in range(1, n + 1):
+        if indegree[v] == 0 or seen_cycle[v]:
+            continue
+
+        cycle = []
+        cur = v
+        while not seen_cycle[cur]:
+            seen_cycle[cur] = True
+            cycle.append(cur)
+            cur = to[cur]
+
+        size = len(cycle)
+        for x in cycle:
+            dp[x] = size
+
+    for v in reversed(removed):
+        dp[v] = dp[to[v]] + 1
+
+    print(sum(dp))
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          サイクル外の頂点を前から何度もたどると重くなる。
+          サイクルを先に確定し、外側の頂点は逆順に1回ずつ処理すると線形時間で済む。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          Functional Graph は、サイクルとそこへ流れ込む枝として見る。
+          サイクル長を土台にし、外側へ <code>+1</code> していくことで各頂点の到達可能数を求められる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC346 E - Paint | AtCoder Study Notes</title>
+    <meta name="description" content="ABC346 E - Paint の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC346 E - Paint</h1>
+          <p class="lead">
+            操作を後ろから見て、最終的に色を決める行・列だけを数える。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            最初は全マスが色 <code>0</code> の大きなグリッドに、行または列を塗り替える操作を行う。
+            すべての操作後、色ごとのマス数を求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc346/tasks/abc346_e">AtCoder ABC346 E - Paint</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          グリッド全体を持つことはできない。
+          さらに、必要なのは最終状態の盤面そのものではなく、色ごとの個数だけである。
+        </p>
+        <p>
+          あるマスの最終色は、そのマスに最後に影響した行操作または列操作で決まる。
+          そのため、操作を後ろから見ると、初めて出てきた行・列だけが新しく最終色を決める。
+        </p>
+        <p>
+          後ろから行操作を採用するとき、すでに最終色が決まっている列との交点は数えない。
+          その行で新しく決まるマス数は <code>W - 決定済み列数</code> である。
+          列操作も同様に <code>H - 決定済み行数</code> 個を数える。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>操作をすべて保存する。</li>
+            <li>後ろから見て、すでに採用した行・列を集合で管理する。</li>
+            <li>未採用の行操作なら、まだ決まっていない列の数だけ色に足す。</li>
+            <li>未採用の列操作なら、まだ決まっていない行の数だけ色に足す。</li>
+            <li>最後まで決まらなかったマスは初期色 <code>0</code> として足す。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          採用済みの行・列は集合で管理する。
+          同じ行や列が後ろから見て2回目以降に出てきた場合、それはより後の操作に上書きされているので無視する。
+          出力では、個数が正の色だけを色番号順に並べる。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+from collections import defaultdict
+
+
+def solve():
+    input = sys.stdin.readline
+    h, w, m = map(int, input().split())
+    operations = [tuple(map(int, input().split())) for _ in range(m)]
+
+    fixed_rows = set()
+    fixed_cols = set()
+    color_count = defaultdict(int)
+
+    for t, a, x in reversed(operations):
+        if t == 1:
+            if a in fixed_rows:
+                continue
+            color_count[x] += w - len(fixed_cols)
+            fixed_rows.add(a)
+        else:
+            if a in fixed_cols:
+                continue
+            color_count[x] += h - len(fixed_rows)
+            fixed_cols.add(a)
+
+    color_count[0] += (h - len(fixed_rows)) * (w - len(fixed_cols))
+
+    items = [(color, count) for color, count in color_count.items() if count &gt; 0]
+    items.sort()
+
+    print(len(items))
+    for color, count in items:
+        print(color, count)
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          前から塗ると上書きを追う必要がある。
+          後ろから見ると、各行・各列の最後の操作だけが意味を持つため、数える対象が明確になる。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          最終色を決める操作だけを後ろから採用し、担当する未決定マス数を色ごとに加算する。
+          大きなグリッドを作らずに、色ごとの個数だけを求められる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC345 E - Colorful Subsequence | AtCoder Study Notes</title>
+    <meta name="description" content="ABC345 E - Colorful Subsequence の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC345 E - Colorful Subsequence</h1>
+          <p class="lead">
+            削除数ごとに「最後の色と価値合計」の上位2件だけを残す。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            ボールをちょうど <code>K</code> 個取り除き、残った列で同じ色が隣り合わないようにする。
+            可能な場合、残る価値の総和の最大値を求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc345/tasks/abc345_e">AtCoder ABC345 E - Colorful Subsequence</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          <code>K</code> 個取り除く問題は、<code>N-K</code> 個を残す問題としても見られる。
+          残った列は元の順番を保つので、左から順に「取り除く」か「残す」かを決める。
+        </p>
+        <p>
+          残す場合に必要なのは、直前に残したボールの色である。
+          そのため状態には、取り除いた個数と最後に残した色、価値合計を持ちたい。
+        </p>
+        <p>
+          ただし、色をすべて持つと大きすぎる。
+          今の色 <code>c</code> のボールを残すときに必要なのは、
+          「最後の色が <code>c</code> ではない状態の最大値」だけである。
+          各削除数について上位2件を持てば、1位の色が使えない場合は2位を見るだけで済む。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li><code>dp[j]</code> に、<code>j</code> 個削除した状態の上位2件を持つ。</li>
+            <li>各状態は <code>(最後の色, 価値合計)</code> とする。</li>
+            <li>今のボールを取り除く場合は、削除数を1増やし、最後の色と価値はそのまま。</li>
+            <li>今のボールを残す場合は、最後の色が今の色と違う状態から価値を足す。</li>
+            <li>各削除数について、常に上位2件だけを残す。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          初期状態は「まだ何も残していない」状態として、最後の色を番兵にする。
+          存在しない状態は十分小さい負の値にしておく。
+          答えは <code>dp[K]</code> の1位で、存在しなければ <code>-1</code> である。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+
+
+NEG_INF = -10**30
+
+
+def add_state(best, color, value):
+    if value == NEG_INF:
+        return
+
+    first_color, first_value = best[0]
+    second_color, second_value = best[1]
+
+    if first_color == color:
+        if value &gt; first_value:
+            best[0] = (color, value)
+        return
+
+    if second_color == color:
+        if value &gt; second_value:
+            best[1] = (color, value)
+            if best[1][1] &gt; best[0][1]:
+                best[0], best[1] = best[1], best[0]
+        return
+
+    if value &gt; first_value:
+        best[1] = best[0]
+        best[0] = (color, value)
+    elif value &gt; second_value:
+        best[1] = (color, value)
+
+
+def solve():
+    input = sys.stdin.readline
+    n, k = map(int, input().split())
+    balls = [tuple(map(int, input().split())) for _ in range(n)]
+
+    dp = [[(-1, NEG_INF), (-1, NEG_INF)] for _ in range(k + 1)]
+    dp[0][0] = (0, 0)
+
+    for color, value in balls:
+        next_dp = [[(-1, NEG_INF), (-1, NEG_INF)] for _ in range(k + 1)]
+
+        for removed in range(k + 1):
+            for last_color, total in dp[removed]:
+                if total == NEG_INF:
+                    continue
+
+                if removed + 1 &lt;= k:
+                    add_state(next_dp[removed + 1], last_color, total)
+
+                if last_color != color:
+                    add_state(next_dp[removed], color, total + value)
+
+        dp = next_dp
+
+    answer = dp[k][0][1]
+    print(answer if answer != NEG_INF else -1)
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          各削除数で最大1件だけを持つと、その1件の最後の色が今の色と同じ場合に使えない。
+          そのため、別色の候補として2位まで保持する必要がある。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          左から順に残すか消すかをDPする。
+          最後の色をすべて持つ代わりに、削除数ごとの上位2件だけを残すことで、効率よく最大価値を求められる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

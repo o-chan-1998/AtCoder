@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC366 D - Cuboid Sum Query | AtCoder Study Notes</title>
+    <meta name="description" content="ABC366 D - Cuboid Sum Query の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC366 D - Cuboid Sum Query</h1>
+          <p class="lead">
+            3次元累積和を前計算し、各直方体の合計を8個の値で求める。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            <code>N x N x N</code> の立方体状に値が与えられる。
+            多数のクエリについて、指定された直方体範囲に含まれる値の合計を求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc366/tasks/abc366_d">AtCoder ABC366 D - Cuboid Sum Query</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          クエリ数が多いため、毎回直方体の中身をすべて足すと間に合わない。
+          値の更新はないので、前処理として累積和を作るのが自然である。
+        </p>
+        <p>
+          1次元なら区間累積和、2次元なら長方形の累積和を使う。
+          この問題は座標が <code>x, y, z</code> の3つなので、3次元累積和を使う。
+        </p>
+        <p>
+          <code>s[x][y][z]</code> を、<code>(1,1,1)</code> から <code>(x,y,z)</code> までの合計として持つ。
+          指定された直方体の合計は、不要な部分を引き、重なった部分を足し戻す包除原理で求める。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>入力を1-indexedの3次元配列として受け取る。</li>
+            <li><code>s[x][y][z]</code> を3次元累積和として作る。</li>
+            <li>各クエリでは、累積和の8点を使って直方体の合計を計算する。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          添字を1-indexedにし、0番目を番兵として用意すると、
+          <code>lx - 1</code> などがそのまま使えて場合分けが少なくなる。
+          包除原理では、3方向を引き、2方向の重なりを足し、3方向の重なりをもう一度引く。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+
+
+def solve():
+    input = sys.stdin.readline
+    n = int(input())
+
+    a = [[[0] * (n + 1) for _ in range(n + 1)] for _ in range(n + 1)]
+    for x in range(1, n + 1):
+        for y in range(1, n + 1):
+            values = list(map(int, input().split()))
+            for z, value in enumerate(values, start=1):
+                a[x][y][z] = value
+
+    s = [[[0] * (n + 1) for _ in range(n + 1)] for _ in range(n + 1)]
+    for x in range(1, n + 1):
+        for y in range(1, n + 1):
+            for z in range(1, n + 1):
+                s[x][y][z] = (
+                    a[x][y][z]
+                    + s[x - 1][y][z]
+                    + s[x][y - 1][z]
+                    + s[x][y][z - 1]
+                    - s[x - 1][y - 1][z]
+                    - s[x - 1][y][z - 1]
+                    - s[x][y - 1][z - 1]
+                    + s[x - 1][y - 1][z - 1]
+                )
+
+    def cuboid_sum(lx, rx, ly, ry, lz, rz):
+        return (
+            s[rx][ry][rz]
+            - s[lx - 1][ry][rz]
+            - s[rx][ly - 1][rz]
+            - s[rx][ry][lz - 1]
+            + s[lx - 1][ly - 1][rz]
+            + s[lx - 1][ry][lz - 1]
+            + s[rx][ly - 1][lz - 1]
+            - s[lx - 1][ly - 1][lz - 1]
+        )
+
+    q = int(input())
+    answers = []
+    for _ in range(q):
+        lx, rx, ly, ry, lz, rz = map(int, input().split())
+        answers.append(str(cuboid_sum(lx, rx, ly, ry, lz, rz)))
+
+    print("\n".join(answers))
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          2次元累積和と同じ感覚で、引きすぎた重なりを戻す必要がある。
+          3次元では使う点が8個になるため、符号を間違えないように式を整理する。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          更新のない大量の範囲和クエリは累積和で前処理する。
+          直方体範囲では、3次元累積和と包除原理で各クエリを高速に答えられる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

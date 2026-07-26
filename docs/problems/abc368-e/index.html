@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC368 E - Train Delay | AtCoder Study Notes</title>
+    <meta name="description" content="ABC368 E - Train Delay の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC368 E - Train Delay</h1>
+          <p class="lead">
+            各駅で、時刻表上すでに到着した電車の最大実到着時刻を持つ。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            電車1の遅延が与えられる。
+            もともと乗り換え可能だった組が、遅延後も乗り換え可能であるように、各電車の遅延量を最小に決める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc368/tasks/abc368_e">AtCoder ABC368 E - Train Delay</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          条件は、乗り換え元の実到着時刻が、乗り換え先の実発車時刻以下であることを要求している。
+          電車 <code>j</code> の遅延量を決めるには、発車駅 <code>A_j</code> に時刻表上すでに到着している電車の
+          実到着時刻の最大値を見ればよい。
+        </p>
+        <p>
+          <code>latest[v]</code> を、街 <code>v</code> に時刻表上すでに到着した電車の最大実到着時刻とする。
+          電車 <code>j</code> の発車時には、
+          <code>X_j = max(0, latest[A_j] - S_j)</code> とすれば必要最小の遅延になる。
+        </p>
+        <p>
+          電車が到着したら、その実到着時刻 <code>T_j + X_j</code> で <code>latest[B_j]</code> を更新する。
+          これを正しい順番で処理するため、発車イベントと到着イベントを時刻順に並べる。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>各電車について、発車イベントと到着イベントを作る。</li>
+            <li>イベントを時刻順にソートする。同時刻なら到着を先に処理する。</li>
+            <li>到着イベントでは、到着駅の <code>latest</code> を実到着時刻で更新する。</li>
+            <li>発車イベントでは、電車1以外の遅延量を <code>max(0, latest[発車駅] - 発車時刻)</code> で決める。</li>
+            <li><code>X_2..X_M</code> を出力する。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          同じ時刻に到着と発車がある場合、時刻表上は乗り換え可能なので到着を先に処理する。
+          そのため、イベント種別は到着を小さい値にしてソートする。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+
+
+def solve():
+    input = sys.stdin.readline
+    n, m, x1 = map(int, input().split())
+
+    a = [0] * (m + 1)
+    b = [0] * (m + 1)
+    s = [0] * (m + 1)
+    t = [0] * (m + 1)
+
+    events = []
+    for train in range(1, m + 1):
+        a[train], b[train], s[train], t[train] = map(int, input().split())
+        events.append((t[train], 0, train))
+        events.append((s[train], 1, train))
+
+    events.sort()
+
+    delay = [0] * (m + 1)
+    delay[1] = x1
+    latest = [0] * (n + 1)
+
+    for _, event_type, train in events:
+        if event_type == 0:
+            city = b[train]
+            latest[city] = max(latest[city], t[train] + delay[train])
+        else:
+            if train == 1:
+                continue
+            city = a[train]
+            delay[train] = max(0, latest[city] - s[train])
+
+    print(" ".join(map(str, delay[2:])))
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          乗り換え元を電車ごとにすべて探す必要はない。
+          発車駅ごとに最大の実到着時刻だけを持てば、その駅で待つべき最小遅延が決まる。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          発車と到着を時刻順イベントとして処理する。
+          各駅の最大実到着時刻を更新し、各電車は発車時にその値まで待つことで、最小の遅延量を求められる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
