@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC282 D - Make Bipartite 2 | AtCoder Study Notes</title>
+    <meta name="description" content="ABC282 D - Make Bipartite 2 の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC282 D - Make Bipartite 2</h1>
+          <p class="lead">
+            追加候補を1本ずつ試さず、二部グラフの色分けから追加できないペアをまとめて引く。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            無向グラフにまだ存在しない辺を1本追加するとき、追加後のグラフが二部グラフになるような
+            頂点ペアの個数を求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc282/tasks/abc282_d">AtCoder ABC282 D - Make Bipartite 2</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          追加後のグラフが二部グラフなら、追加前のグラフも二部グラフでなければならない。
+          そのため、まずグラフ全体を連結成分ごとに2色で塗り、隣り合う頂点が同じ色になる矛盾があれば答えは
+          <code>0</code> になる。
+        </p>
+        <p>
+          元のグラフが二部グラフだった場合、追加候補は「全ての頂点ペア」から「すでに存在する辺」を除いた非辺である。
+          非辺の数は <code>N * (N - 1) / 2 - M</code> 個ある。
+        </p>
+        <p>
+          この非辺のうち、追加してはいけないのは
+          <code>同じ連結成分内で、同じ色に塗られた頂点どうし</code> である。
+          同じ色どうしを結ぶと、二部グラフの条件を壊してしまう。
+        </p>
+        <p>
+          一方、違う連結成分どうしなら、片方の成分の黒と白をまるごと反転できる。
+          そのため、違う連結成分に属する2頂点の間には、どの組み合わせでも辺を追加できる。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>隣接リストを作る。</li>
+            <li>BFS または DFS で各連結成分を2色に塗る。</li>
+            <li>塗っている途中で、隣接頂点が同じ色なら <code>0</code> を出力する。</li>
+            <li>答えの初期値を <code>N * (N - 1) / 2 - M</code> にする。</li>
+            <li>各連結成分について、色0の個数を <code>a</code>、色1の個数を <code>b</code> とする。</li>
+            <li>同じ成分内の同色ペア <code>aC2 + bC2</code> を答えから引く。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>小さい例</h2>
+        <p>
+          たとえば、ある連結成分が <code>{1, 2, 3}</code> で、
+          色分けが <code>{1, 3}</code> と <code>{2}</code> に分かれたとする。
+          この成分内では、違う色の間には辺を追加できるが、同じ色の <code>(1, 3)</code> は追加できない。
+        </p>
+        <p>
+          色0が2個、色1が1個なので、追加できない同色ペアは
+          <code>2C2 + 1C2 = 1</code> 個である。
+          これを各連結成分について足し合わせ、非辺の総数から引けばよい。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          頂点数と辺数が大きいので、追加候補の頂点ペアを列挙して試すことはできない。
+          必要なのは各連結成分の色ごとの個数だけなので、探索中に <code>[0色の個数, 1色の個数]</code>
+          を数えればよい。
+        </p>
+        <p>
+          孤立頂点も1つの連結成分として扱う。
+          たとえば色0を1個、色1を0個として数えれば、同色ペアは <code>0</code> 個になる。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+from collections import deque
+
+
+def solve():
+    input = sys.stdin.readline
+    n, m = map(int, input().split())
+
+    graph = [[] for _ in range(n)]
+    for _ in range(m):
+        u, v = map(int, input().split())
+        u -= 1
+        v -= 1
+        graph[u].append(v)
+        graph[v].append(u)
+
+    color = [-1] * n
+    answer = n * (n - 1) // 2 - m
+
+    for start in range(n):
+        if color[start] != -1:
+            continue
+
+        color[start] = 0
+        queue = deque([start])
+        count = [1, 0]
+
+        while queue:
+            current = queue.popleft()
+
+            for next_vertex in graph[current]:
+                if color[next_vertex] == -1:
+                    color[next_vertex] = 1 - color[current]
+                    count[color[next_vertex]] += 1
+                    queue.append(next_vertex)
+                elif color[next_vertex] == color[current]:
+                    print(0)
+                    return
+
+        black, white = count
+        answer -= black * (black - 1) // 2
+        answer -= white * (white - 1) // 2
+
+    print(answer)
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          同じ色どうしがだめなのは、同じ連結成分内だけである。
+          違う連結成分どうしは色の呼び方を反転できるため、同じ色に見えていても追加できる。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          まず元のグラフが二部グラフかを確認する。
+          二部グラフなら、全ての非辺から各連結成分内の同色ペアを引くことで、条件を満たす追加辺の個数を求められる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
