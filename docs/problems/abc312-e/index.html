@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC312 E - Tangency of Cuboids | AtCoder Study Notes</title>
+    <meta name="description" content="ABC312 E - Tangency of Cuboids の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC312 E - Tangency of Cuboids</h1>
+          <p class="lead">
+            小さい座標範囲を使い、空間を単位立方体で塗って面で隣り合う直方体を集める。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            3次元空間内に、互いに体積が正の重なりを持たない直方体がある。
+            各直方体について、他の直方体と面積が正の面で接している相手の数を求める。
+            点だけ、または線だけで接している場合は数えない。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc312/tasks/abc312_e">AtCoder ABC312 E - Tangency of Cuboids</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          直方体の個数は大きいため、全ペアを直接比較する方針は取りにくい。
+          一方で、各座標は <code>0</code> から <code>100</code> までに収まる。
+          空間全体を <code>1 x 1 x 1</code> の単位立方体に分けると、最大でも
+          <code>100 * 100 * 100</code> 個なので配列や辞書で扱える。
+        </p>
+        <p>
+          各直方体が占める単位立方体に、その直方体番号を書き込む。
+          その後、隣り合う単位立方体を調べ、所有者が異なる直方体番号なら、その2つは面で接している。
+          接触相手は集合に入れて、同じ相手を重複して数えないようにする。
+        </p>
+        <p>
+          点や線で接しているだけの場合は、単位立方体どうしが面で隣り合う組として現れない。
+          そのため、この方法では自然に「面積が正の接触」だけを拾える。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>解法方針</h2>
+          <ol class="steps">
+            <li>各直方体について、範囲 <code>x1 &lt;= x &lt; x2</code> などにある単位立方体を直方体番号で塗る。</li>
+            <li>塗られた各単位立方体から、正の <code>x</code>, <code>y</code>, <code>z</code> 方向の隣だけを見る。</li>
+            <li>隣も塗られていて、番号が違えば互いの接触相手集合に追加する。</li>
+            <li>最後に各直方体の集合サイズを出力する。</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          直方体の右端の座標 <code>x2</code>, <code>y2</code>, <code>z2</code> は、
+          単位立方体の開始座標としては含めない。
+          例えば <code>x1 = 0, x2 = 2</code> なら、塗る <code>x</code> は <code>0</code> と <code>1</code> である。
+        </p>
+        <p>
+          隣接確認は正の3方向だけで十分。
+          負方向も見ると同じ組を逆向きに確認するだけなので、集合で消せるとはいえ処理が増える。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+
+
+def solve():
+    input = sys.stdin.readline
+    n = int(input())
+    cuboids = [tuple(map(int, input().split())) for _ in range(n)]
+
+    owner = {}
+
+    for index, (x1, y1, z1, x2, y2, z2) in enumerate(cuboids):
+        for x in range(x1, x2):
+            for y in range(y1, y2):
+                for z in range(z1, z2):
+                    owner[(x, y, z)] = index
+
+    contacts = [set() for _ in range(n)]
+    directions = [(1, 0, 0), (0, 1, 0), (0, 0, 1)]
+
+    for (x, y, z), current in owner.items():
+        for dx, dy, dz in directions:
+            neighbor = (x + dx, y + dy, z + dz)
+            if neighbor not in owner:
+                continue
+
+            other = owner[neighbor]
+            if current == other:
+                continue
+
+            contacts[current].add(other)
+            contacts[other].add(current)
+
+    print("\n".join(str(len(contact)) for contact in contacts))
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          求めるのは接触している面の個数ではなく、接触相手の直方体数である。
+          広い面で接していると複数の単位立方体の隣接として見つかるため、集合で重複を消す。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          座標範囲が小さいことを使い、幾何判定を単位立方体の隣接判定に変換する。
+          空間を塗って隣を調べれば、面で接している相手だけを効率よく数えられる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

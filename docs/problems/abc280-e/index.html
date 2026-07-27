@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ABC280 E - Critical Hit | AtCoder Study Notes</title>
+    <meta name="description" content="ABC280 E - Critical Hit の解説記事です。">
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-grid">
+        <div>
+          <p class="label"><a href="../../">AtCoder Study Notes</a></p>
+          <h1>ABC280 E - Critical Hit</h1>
+          <p class="lead">
+            体力ごとの期待攻撃回数を状態にし、1回攻撃した後の行き先を確率で平均する。
+          </p>
+        </div>
+        <nav class="quick-links" aria-label="ページ内リンク">
+          <a href="#summary">要約</a>
+          <a href="#idea">考察</a>
+          <a href="#implementation">実装</a>
+          <a href="#code">コード</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap intro" id="summary">
+        <div class="problem-box">
+          <span class="problem-tag">Article</span>
+          <h2>問題の要約</h2>
+          <p>
+            体力 <code>N</code> のモンスターに攻撃する。
+            1回の攻撃では、確率 <code>P / 100</code> で2ダメージ、それ以外の確率で1ダメージを与える。
+            体力が0以下になるまでの攻撃回数の期待値を、<code>998244353</code> で割った余りとして求める。
+          </p>
+          <p>
+            問題ページ:
+            <a href="https://atcoder.jp/contests/abc280/tasks/abc280_e">AtCoder ABC280 E - Critical Hit</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="idea">
+        <h2>考察</h2>
+        <p>
+          攻撃結果の列を直接数えるのではなく、現在の体力から見た期待値を考える。
+          現在の体力だけ分かれば、その後に必要な攻撃回数の期待値は決まるので、
+          <code>dp[i]</code> を「体力 <code>i</code> から倒すまでの期待攻撃回数」と定義する。
+        </p>
+        <p>
+          体力 <code>i</code> が1以上なら、まず必ず1回攻撃する。
+          その後、1ダメージなら体力は <code>i - 1</code>、2ダメージなら <code>i - 2</code> へ進む。
+          よって、遷移は次の形になる。
+        </p>
+        <pre><code>dp[i] = 1
+      + (1 - P / 100) * dp[i - 1]
+      + (P / 100) * dp[i - 2]</code></pre>
+        <p>
+          体力が0以下ならすでに倒れているので、残りの期待攻撃回数は0である。
+          そのため <code>dp[0] = 0</code>、また <code>i = 1</code> の2ダメージ先も0として扱えばよい。
+        </p>
+      </section>
+
+      <section class="band">
+        <div class="wrap article-section">
+          <h2>小さい例</h2>
+          <p>
+            例えば <code>N = 3, P = 10</code> では、2ダメージの確率が <code>1 / 10</code>、
+            1ダメージの確率が <code>9 / 10</code> になる。
+          </p>
+          <ol class="steps">
+            <li><code>dp[1] = 1</code>。どちらの攻撃結果でも倒し切れる。</li>
+            <li><code>dp[2] = 1 + (9 / 10) * dp[1] + (1 / 10) * dp[0] = 19 / 10</code>。</li>
+            <li><code>dp[3] = 1 + (9 / 10) * dp[2] + (1 / 10) * dp[1] = 281 / 100</code>。</li>
+          </ol>
+          <p>
+            問題では分数をそのまま出さず、分母の逆元を使って mod 上の整数として出力する。
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap article-section" id="implementation">
+        <h2>実装の注意点</h2>
+        <p>
+          Python では分数や小数ではなく、すべて <code>mod 998244353</code> 上で計算する。
+          <code>100</code> で割る処理は、<code>pow(100, MOD - 2, MOD)</code> で求めた逆元を掛ける。
+        </p>
+        <p>
+          <code>dp[i]</code> は <code>dp[i - 1]</code> と <code>dp[i - 2]</code> だけに依存する。
+          配列で <code>0</code> から <code>N</code> まで順に埋めればよい。
+          <code>i = 1</code> のときだけ <code>dp[i - 2]</code> が存在しないため、2ダメージ後の期待値は0として足さない。
+        </p>
+      </section>
+
+      <section class="wrap article-section" id="code">
+        <h2>コード</h2>
+        <pre><code>import sys
+
+MOD = 998244353
+
+
+def solve():
+    input = sys.stdin.readline
+    n, p = map(int, input().split())
+
+    inv_100 = pow(100, MOD - 2, MOD)
+    prob_critical = p * inv_100 % MOD
+    prob_normal = (1 - prob_critical) % MOD
+
+    dp = [0] * (n + 1)
+
+    for hp in range(1, n + 1):
+        expected = 1
+        expected += prob_normal * dp[hp - 1]
+        expected %= MOD
+
+        if hp >= 2:
+            expected += prob_critical * dp[hp - 2]
+            expected %= MOD
+
+        dp[hp] = expected
+
+    print(dp[n])
+
+
+if __name__ == "__main__":
+    solve()</code></pre>
+      </section>
+
+      <section class="wrap article-section">
+        <h2>つまずきポイント</h2>
+        <p>
+          期待値の式では「今行う1回」を先に足す。
+          そのうえで、攻撃後の状態の期待値を確率で平均する。
+          また、<code>P / 100</code> を通常の割り算で計算せず、mod の逆元として扱う点に注意する。
+        </p>
+        <h2>まとめ</h2>
+        <p>
+          状態を体力だけに絞ると、期待値 DP として素直に解ける。
+          <code>dp[i]</code> は、1回攻撃する分と、1ダメージ後・2ダメージ後の期待値の加重平均で求められる。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
